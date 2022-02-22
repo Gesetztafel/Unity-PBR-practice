@@ -1,0 +1,21 @@
+fileFormatVersion: 2
+guid: 8f9a5085944038f448e529d3f7564ece
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures:
+  - _MainTex: {instanceID: 0}
+  - _NormalMap: {instanceID: 0}
+  - _MetallicMap: {instanceID: 0}
+  - _ParallaxMap: {instanceID: 0}
+  - _OcclusionMap: {instanceID: 0}
+  - _EmissionMap: {instanceID: 0}
+  - _DetailMask: {instanceID: 0}
+  - _DetailTex: {instanceID: 0}
+  - _DetailNormalMap: {instanceID: 0}
+  - _DFG: {fileID: 2800000, guid: 5b3ac0c1e4750eb4e96fe2c55acbc623, type: 3}
+  - _DFG_CLOTH: {fileID: 2800000, guid: 5d73d945478c4704cab662624a6211dd, type: 3}
+  nonModifiableTextures: []
+  preprocessorOverride: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
