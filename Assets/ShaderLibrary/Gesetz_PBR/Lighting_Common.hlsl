@@ -3,6 +3,8 @@
 
 #include "UnityLightingCommon.cginc"
 #include "Materials_Input.hlsl"
+#include "Common_Shading.hlsl"
+
 // float4 _LightColor0;
 // float4 _SpecColor;
 //
@@ -79,15 +81,15 @@ struct PixelParams
     float clearCoatRoughness;
 #endif
 	
-// #if defined(SHEEN_COLOR)
-//     float3  sheenColor;
-// #if !defined(SHADING_MODE_CLOTH)
-//     float sheenRoughness;
-//     float sheenPerceptualRoughness;
-//     float sheenScaling;
-//     float sheenDFG;
-// #endif
-// #endif
+#if defined(SHEEN_COLOR)
+    float3  sheenColor;
+#if !defined(SHADING_MODE_CLOTH)
+    float sheenRoughness;
+    float sheenPerceptualRoughness;
+    float sheenScaling;
+    float sheenDFG;
+#endif
+#endif
 	
 #if defined(ANISOTROPY)
     float3  anisotropicT;
@@ -122,15 +124,14 @@ float computeMicroShadowing(float NdotL, float visibility) {
     float microShadow = saturate(NdotL * aperture);
     return microShadow * microShadow;
 }
-
-
+//[McAuley15] ÍäÇú·´ÉäÏòÁ¿
 float3 getReflectedVector(const PixelParams pixel, const float3 v, const float3 n) {
 #if defined(ANISOTROPY)
     float3  anisotropyDirection = pixel.anisotropy >= 0.0 ? pixel.anisotropicB : pixel.anisotropicT;
     float3  anisotropicTangent  = cross(anisotropyDirection, v);
     float3  anisotropicNormal   = cross(anisotropicTangent, anisotropyDirection);
     float bendFactor          = abs(pixel.anisotropy) * saturate(5.0 * pixel.perceptualRoughness);
-    float3  bentNormal          = normalize(mix(n, anisotropicNormal, bendFactor));
+    float3  bentNormal          = normalize(lerp(n, anisotropicNormal, bendFactor));
 
     float3 r = reflect(-v, bentNormal);
 #else
@@ -139,15 +140,18 @@ float3 getReflectedVector(const PixelParams pixel, const float3 v, const float3 
     return r;
 }
 
-// void getAnisotropyPixelParams(const ExtendedMaterialInputs material,
-// 							inout PixelParams pixel) {
-// #if defined(ANISOTROPY)
-//     float3 direction = anisotropyDirection;
-//     pixel.anisotropy = anisotropy;
-//     
-//     pixel.anisotropicT = normalize(shading_tangentToWorld * direction);	
-//     pixel.anisotropicB = normalize(cross(getWorldGeometricNormalVector(), pixel.anisotropicT));
-// #endif
-// }
+void getAnisotropyPixelParams(const MaterialInputs material,out PixelParams pixel,const ShadingParameters shadingParameters)
+{
+	float3x3 tangentToWorld=shadingParameters.tangentToWorld;
+	float3 WorldGeometricNormalVector=normalize(shadingParameters.geometricNormalWS);
+	
+#if defined(ANISOTROPY)
+    float3 direction = material.anisotropyDirection;
+    pixel.anisotropy = material.anisotropy;
 
+	//glsl tangentToWorld*direction
+    pixel.anisotropicT = normalize(mul(tangentToWorld,direction));	
+    pixel.anisotropicB = normalize(cross(WorldGeometricNormalVector, pixel.anisotropicT));
+#endif
+}
 #endif

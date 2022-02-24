@@ -38,7 +38,7 @@
 
 struct MaterialInputs
 {
-    float3  baseColor;
+    float4  baseColor;
     float roughness;
 #if !defined(SHADING_MODEL_CLOTH) 
     float metallic;
@@ -46,10 +46,6 @@ struct MaterialInputs
 #endif
     float ambientOcclusion;
     float3  emissive;
-
-	//Added
-	float alpha;
-    float3  normal;
 	
 // #if !defined(SHADING_MODEL_CLOTH) && !defined(SHADING_MODEL_SUBSURFACE)
 //     float3 sheenColor;
@@ -61,34 +57,50 @@ struct MaterialInputs
 //
 //     float anisotropy;
 //     float3  anisotropyDirection;
-//
+#if !defined(SHADING_MODEL_CLOTH) && !defined(SHADING_MODEL_SUBSURFACE)
+#if defined(SHEEN_COLOR)
+    float3 sheenColor;
+    float sheenRoughness;
+#endif
+#endif
+ 
+ #if defined(CLEAR_COAT)
+	float clearCoat;
+    float clearCoatRoughness;
+ #endif
+ 
+ #if defined(ANISOTROPY)
+    float anisotropy;
+    float3  anisotropyDirection;
+ #endif
+	
 // #if defined(SHADING_MODEL_SUBSURFACE) || defined(REFRACTION)
 //     float thickness;
 // #endif
-//
+
 // #if defined(SHADING_MODEL_SUBSURFACE)
 //     float subsurfacePower;
 //     float3  subsurfaceColor;
 // #endif
-//
-// #if defined(SHADING_MODEL_CLOTH)
-//     float3  sheenColor;
-// #if defined(SUBSURFACE_COLOR)
-//     float3  subsurfaceColor;
-// #endif
-// #endif
+
+#if defined(SHADING_MODEL_CLOTH)
+    float3  sheenColor;
+#if defined(SUBSURFACE_COLOR)
+    float3  subsurfaceColor;
+#endif
+#endif
 
 
-// #if defined(NORMAL)
-//     float3  normal;
-// #endif
+#if defined(NORMAL)
+    float3  normal;
+#endif
 // #if defined(BENT_NORMAL)
 //     float3  bentNormal;
 // #endif
 
-// #if defined(CLEAR_COAT) && defined(CLEAR_COAT_NORMAL)
-//     float3  clearCoatNormal;
-// #endif
+#if defined(CLEAR_COAT) && defined(CLEAR_COAT_NORMAL)
+    float3  clearCoatNormal;
+#endif
 
 // #if defined(POST_LIGHTING_COLOR)
 //     float4  postLightingColor;
@@ -117,9 +129,7 @@ struct MaterialInputs
 };
 void InitMaterialInputs(out MaterialInputs material)
 {
-	material.alpha=0.0;
-
-	material.baseColor = float3(1.0,1.0,1.0);
+	material.baseColor = float4(1.0,1.0,1.0,1.0);
     material.roughness = 1.0;
 
 #if !defined(SHADING_MODEL_CLOTH)
@@ -130,25 +140,24 @@ void InitMaterialInputs(out MaterialInputs material)
 
     material.emissive = float3(0.0,0.0,0.0);
 
-     material.normal = float3(0.0, 0.0, 1.0);
 	
- // #if !defined(SHADING_MODEL_CLOTH) && !defined(SHADING_MODEL_SUBSURFACE)
- // #if defined(SHEEN_COLOR)
- //     material.sheenColor = float3(0.0,0.0,0.0);
- //     material.sheenRoughness = 0.0;
- // #endif
- // #endif
- //
- // #if defined(CLEAR_COAT)
- //     material.clearCoat = 1.0;
- //     material.clearCoatRoughness = 0.0;
- // #endif
- //
- // #if defined(ANISOTROPY)
- //     material.anisotropy = 0.0;
- //     material.anisotropyDirection = float3(1.0, 0.0, 0.0);
- // #endif
- //
+ #if !defined(SHADING_MODEL_CLOTH) && !defined(SHADING_MODEL_SUBSURFACE)
+ #if defined(SHEEN_COLOR)
+     material.sheenColor = float3(0.0,0.0,0.0);
+     material.sheenRoughness = 0.0;
+ #endif
+ #endif
+ 
+ #if defined(CLEAR_COAT)
+     material.clearCoat = 1.0;
+     material.clearCoatRoughness = 0.0;
+ #endif
+ 
+ #if defined(ANISOTROPY)
+     material.anisotropy = 0.0;
+     material.anisotropyDirection = float3(1.0, 0.0, 0.0);
+ #endif
+ 
  // #if defined(SHADING_MODEL_SUBSURFACE) || defined(REFRACTION)
  //     material.thickness = 0.5;
  // #endif
@@ -204,27 +213,106 @@ void InitMaterialInputs(out MaterialInputs material)
  // #endif
 }
 
+//Move to Material_getters.hlsl
 
-float _Reflectance;
-float GetReflectance () {
-		return _Reflectance;
+float _Anisotropy;
+sampler2D _AnisotropyDirection;
+
+float GetAnisotropy()
+{
+#if defined(ANISOTROPY)
+	return  _Anisotropy;
+#endif
+}
+
+float3 GetAnisotropyDirection(Interpolators i)
+{
+#if defined(ANISOTROPY)
+	return tex2D(_AnisotropyDirection,UV_FUNCTION(i).xy);
+#endif
+}
+
+
+float _ClearCoat;
+float _ClearCoatRoughness;
+
+float GetClearCoat(Interpolators i)
+{
+	#if defined(CLEARCOAT_MAP)
+		return tex2D(_ClearCoat_Map, UV_FUNCTION(i).xy).r;
+	#else
+		return _ClearCoat;
+	#endif
+}
+
+float GetClearCoatRoughness(){
+#if defined(CLEAR_COAT)
+     return _ClearCoatRoughness;
+#endif
+}
+
+sampler2D _ClearCoatNormal;
+float3 GetClearCoatNormalTS(Interpolators i)
+{
+	float3 normal=float3(0.0,0.0,1.0);
+#if defined(CLEAR_COAT_NORMAL)
+	normal=tex2D(_ClearCoat_NormalMap, UV_FUNCTION(i).xy);
+#endif
+	return normal;
+}
+
+float3 _SheenColor;
+float _SheenRoughness;
+
+float3 GetSheenColor()
+{
+#if !defined(SHADING_MODEL_CLOTH) && !defined(SHADING_MODEL_SUBSURFACE)
+#if defined(SHEEN_COLOR)
+     return _SheenColor;
+#endif
+#endif
+}
+
+float GetsheenRoughness()
+{
+#if !defined(SHADING_MODEL_CLOTH) && !defined(SHADING_MODEL_SUBSURFACE)
+#if defined(SHEEN_COLOR)
+     return _SheenRoughness;
+#endif
+#endif
 }
 
 void prepareMaterial(inout MaterialInputs material,Interpolators i)
 {
 	//Standard
-	material.normal=i.normal;
-	material.baseColor=GetAlbedo(i);
+	material.baseColor=float4(GetAlbedo(i),GetAlpha(i));
 	material.metallic=GetMetallic(i);
-	material.alpha=GetAlpha(i);
 	material.emissive=GetEmission(i);
 	material.ambientOcclusion=GetOcclusion(i);
 	material.roughness=GetRoughness(i);
 	material.reflectance=GetReflectance();
 
-	//Clear Coat
+#if !defined(SHADING_MODEL_CLOTH) && !defined(SHADING_MODEL_SUBSURFACE)
+#if defined(SHEEN_COLOR)
+     material.sheenColor = GetSheenColor();
+     material.sheenRoughness = GetsheenRoughness();
+#endif
+#endif
+ 
+ #if defined(CLEAR_COAT)
+     material.clearCoat = GetClearCoat(i);
+     material.clearCoatRoughness =GetClearCoatRoughness();
+ #endif
+ 
+ #if defined(ANISOTROPY)
+     material.anisotropy = GetAnisotropy();
+     material.anisotropyDirection = GetAnisotropyDirection(i);
+ #endif
 
 	
 }
+
+
+
 
 #endif

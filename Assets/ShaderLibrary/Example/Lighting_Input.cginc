@@ -83,14 +83,14 @@ struct InterpolatorsVertex {
 
 	float3 normal : TEXCOORD1;
 
-	#if REQUIRES_TANGENT_SPACE
-		#if defined(BINORMAL_PER_FRAGMENT)
-			float4 tangent : TEXCOORD2;
-		#else
-			float3 tangent : TEXCOORD2;
-			float3 binormal : TEXCOORD3;
-		#endif
+
+	#if defined(BINORMAL_PER_FRAGMENT)
+		float4 tangent : TEXCOORD2;
+	#else
+		float3 tangent : TEXCOORD2;
+		float3 binormal : TEXCOORD3;
 	#endif
+
 
 	#if FOG_DEPTH
 		float4 worldPos : TEXCOORD4;
@@ -129,15 +129,15 @@ struct Interpolators {
 		float4 uv : TEXCOORD0;
 	#endif
 
+	
 	float3 normal : TEXCOORD1;
 
-	#if REQUIRES_TANGENT_SPACE
-		#if defined(BINORMAL_PER_FRAGMENT)
-			float4 tangent : TEXCOORD2;
-		#else
-			float3 tangent : TEXCOORD2;
-			float3 binormal : TEXCOORD3;
-		#endif
+
+	#if defined(BINORMAL_PER_FRAGMENT)
+		float4 tangent : TEXCOORD2;
+	#else
+		float3 tangent : TEXCOORD2;
+		float3 binormal : TEXCOORD3;
 	#endif
 
 	#if FOG_DEPTH
@@ -242,8 +242,6 @@ float GetSmoothness (Interpolators i) {
 	return smoothness * _Smoothness;
 }
 
-
-
 float GetOcclusion (Interpolators i) {
 	#if defined(_OCCLUSION_MAP)
 		return lerp(1, tex2D(_OcclusionMap, UV_FUNCTION(i).xy).g, _OcclusionStrength);
@@ -265,12 +263,17 @@ float3 GetEmission (Interpolators i) {
 }
 
 //Move to Getters.hlsl
+float _Reflectance;
+float GetReflectance () {
+		return _Reflectance;
+}
+
 sampler2D _RoughnessMap;
 float _Roughness;
 float GetRoughness (Interpolators i) {
 	float roughness = 1;
 	#if defined(ROUGHNESS_MAP)
-		roughness=tex2D(_RoughnessMap,UV_FUNCTION(i).xy).r;
+		roughness = tex2D(_RoughnessMap,UV_FUNCTION(i).xy).r;
 	#elif defined(_ROUGHNESS_ALBEDO)
 		roughness = tex2D(_MainTex, UV_FUNCTION(i).xy).a;
 	#elif defined(_ROUGHNESS_METALLIC) && defined(_METALLIC_MAP)
@@ -278,7 +281,5 @@ float GetRoughness (Interpolators i) {
 	#endif
 	return roughness*_Roughness;
 }
-
-
 
 #endif

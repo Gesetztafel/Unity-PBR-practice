@@ -2,7 +2,7 @@
 #define LIGHTING_INCLUDED
 
 #include "Lighting_Input.cginc"
-#include "../Gesetz_PBR/GI.hlsl"
+#include "../Gesetz_PBR/Indirect_Light.hlsl"
 #include "../Gesetz_PBR/Lighting_Lit.hlsl"
 #include "../Gesetz_PBR/Shading_Models.hlsl"
 
@@ -51,15 +51,14 @@ InterpolatorsVertex VertexProgram (VertexData v) {
 	#endif
 	i.normal = UnityObjectToWorldNormal(v.normal);
 
-	#if REQUIRES_TANGENT_SPACE
-		#if defined(BINORMAL_PER_FRAGMENT)
-			i.tangent = float4(UnityObjectToWorldDir(v.tangent.xyz), v.tangent.w);
-		#else
-			i.tangent = UnityObjectToWorldDir(v.tangent.xyz);
-			i.binormal = CreateBinormal(i.normal, i.tangent, v.tangent.w);
-		#endif
-	#endif
 
+	#if defined(BINORMAL_PER_FRAGMENT)
+		i.tangent = float4(UnityObjectToWorldDir(v.tangent.xyz), v.tangent.w);
+	#else
+		i.tangent = UnityObjectToWorldDir(v.tangent.xyz);
+		i.binormal = CreateBinormal(i.normal, i.tangent, v.tangent.w);
+		#endif
+	
 	#if defined(LIGHTMAP_ON) || ADDITIONAL_MASKED_DIRECTIONAL_SHADOWS
 		i.lightmapUV = v.uv1 * unity_LightmapST.xy + unity_LightmapST.zw;
 	#endif
@@ -214,7 +213,7 @@ UnityIndirect CreateIndirectLight (
 				indirectLight.diffuse += max(0, ShadeSH9(float4(i.normal, 1)));
 			#endif
 		#endif
-
+		//Indirect Specular-LG Term   UnityGI_IndirectSpecular
 		float3 reflectionDir = reflect(-viewDir, i.normal);
 		Unity_GlossyEnvironmentData envData;
 		envData.roughness = 1 - surface.smoothness;
@@ -280,7 +279,7 @@ void ApplySubtractiveLighting (
 
 
 void InitializeFragmentNormal(inout Interpolators i) {
-	#if REQUIRES_TANGENT_SPACE
+
 		float3 tangentSpaceNormal = GetTangentSpaceNormal(i);
 		#if defined(BINORMAL_PER_FRAGMENT)
 			float3 binormal =
@@ -294,9 +293,6 @@ void InitializeFragmentNormal(inout Interpolators i) {
 			tangentSpaceNormal.y * binormal +
 			tangentSpaceNormal.z * i.normal
 		);
-	#else
-		i.normal = normalize(i.normal);
-	#endif
 }
 
 float4 ApplyFog (float4 color, Interpolators i) {
@@ -508,29 +504,28 @@ FragmentOutput FragmentProgram (Interpolators i) {
 	return output;
 }
 
-
 FragmentOutput Gesetz_FragmentProgram (Interpolators i) {
 	UNITY_SETUP_INSTANCE_ID(i);
 	#if defined(LOD_FADE_CROSSFADE)
 		UnityApplyDitherCrossFade(i.vpos);
 	#endif
+	ApplyParallax(i);
 
-	InitializeFragmentNormal(i);
-
+	ShadingParameters shadingParameters=GetShadingParameters(i);
+	//InitializeFragmentNormal(i);
+	
 	MaterialInputs material;
 	InitMaterialInputs(material);
 
 	prepareMaterial(material,i);
 
-	float alpha = material.alpha;
+	float alpha = material.baseColor.a;
 	#if defined(_RENDERING_CUTOUT)
 		clip(alpha - _Cutoff);
 	#endif
-	
-	float3 viewDir = normalize(_WorldSpaceCameraPos - i.worldPos.xyz);
-	
+
 	PixelParams pixel;
-	getPixelParams(material,pixel,dot(viewDir,material.normal));
+	getPixelParams(material,pixel,shadingParameters);
 
 	float oneMinusReflectivity=OneMinusReflectivityFromMetallic(material.metallic);
 
@@ -540,12 +535,11 @@ FragmentOutput Gesetz_FragmentProgram (Interpolators i) {
 	#endif
 
 	UnityLight light=CreateLight(i);
-	UnityIndirect GI=CreateIndirectLight(i,viewDir,material);
-
-	//evalateIBL(GI);
+	// UnityIndirect GI=createIndirectLight(i,shadingParameters,material);
 	
-	float4 color=GESETZ_BRDF_PBS(pixel,i.normal,viewDir,
-				light,GI,oneMinusReflectivity);
+	float4 color=GESETZ_BRDF_PBS(pixel,shadingParameters,light);
+
+	evaluateIBL(material,pixel,shadingParameters,color);
 	
 	color.rgb += material.emissive;
 	#if defined(_RENDERING_FADE) || defined(_RENDERING_TRANSPARENT)
@@ -560,9 +554,8 @@ FragmentOutput Gesetz_FragmentProgram (Interpolators i) {
 		output.gBuffer0.rgb = pixel.diffColor;
 		output.gBuffer0.a = material.ambientOcclusion;
 		output.gBuffer1.rgb = pixel.F0;
-	
 		output.gBuffer1.a = material.roughness;
-		output.gBuffer2 = float4(i.normal * 0.5 + 0.5, 1);
+		output.gBuffer2 = float4(shadingParameters.normalWS * 0.5 + 0.5, 1);
 		output.gBuffer3 = color;
 
 		#if defined(SHADOWS_SHADOWMASK) && (UNITY_ALLOWED_MRT_COUNT > 4)

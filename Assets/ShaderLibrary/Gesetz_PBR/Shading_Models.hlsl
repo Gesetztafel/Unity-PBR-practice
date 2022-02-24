@@ -4,11 +4,12 @@
 #include "BRDF.hlsl"
 #include "Lighting_Common.hlsl"
 
+
 #include "UnityStandardBRDF.cginc"
 
 //Standard
 #if defined(SHEEN_COLOR)
-half3 sheenLobe(const PixelParams pixel,
+float3 sheenLobe(const PixelParams pixel,
 				float NdotV,float NdotL,float NdotH)
 {
 	float D=Distribution_Cloth(pixel.sheenRoughness,NdotH);
@@ -19,20 +20,20 @@ half3 sheenLobe(const PixelParams pixel,
 #endif
 
 #if defined(CLEAR_COAT)
-float3 ClearCoatLobe(const PixelParams pixel,const float3 H,
-					float NdotH,float LdotH,out float Fcc)
+float ClearCoatLobe(const PixelParams pixel,const float3 H,
+					float NdotH,float LdotH,out float Fcc,const float3 clearCoatNormalWS)
 {
 #if defined(CLEAR_COAT_NORMAL) || defined(_NORMAL_MAP)
     // If the material has a normal map, we want to use the geometric normal
     // instead to avoid applying the normal map details to the clear coat layer
-    float clearCoatNdotH = saturate(dot(clearCoatNormal, H));
+    float clearCoatNdotH = saturate(dot(clearCoatNormalWS, H));
 #else
 	float clearCoatNdotH=NdotH;
 #endif
 
 	float D=Distribution_ClearCoat(pixel.clearCoatRoughness,clearCoatNdotH,H);
 	float V=Visibility_ClearCoat(LdotH);
-	float F=F_Schlick(0.04,1.0,LdotH)*pixel.clearColor;
+	float F=F_Schlick(LdotH,0.04,1.0)*pixel.clearCoat;
 
 	Fcc=F;
 	return D*V*F;
@@ -46,10 +47,9 @@ float3 AnisotropicLobe(const PixelParams pixel,const float3 viewDir,const float3
 {
 	float3 T=pixel.anisotropicT;
 	float3 B=pixel.anisotropicB;
-	float3 V=viewDir;
 
-	float TdotV=dot(T,V);
-	float BdotV = dot(B, V);
+	float TdotV=dot(T,viewDir);
+	float BdotV = dot(B, viewDir);
     float TdotL = dot(T, L);
     float BdotL = dot(B, L);
     float TdotH = dot(T, H);
@@ -95,32 +95,33 @@ float3 DiffuseTerm(const PixelParams pixel, float NoV, float NoL, float LoH) {
 }
 
 //Surface BRDF - Standard Model +(ClearCoat,Anisotropy,Sheen)
-float4 GESETZ_BRDF_PBS(PixelParams pixel,
-					float3 normal,float3 V,
-					UnityLight light,UnityIndirect gi,float OneMinusReflectivity)
+float4 GESETZ_BRDF_PBS(PixelParams pixel,ShadingParameters shadingParameters,
+					UnityLight light)
 {
 	float3 L=light.dir;
-
-	//SafeNormalize
-	float3 H=normalize(V+L);
+	float3 viewDir=shadingParameters.viewDir;
+	float3 normal=shadingParameters.normalWS;
 	
-	float NdotV=abs(dot(normal,V));
+	//SafeNormalize
+	float3 H=normalize(viewDir+L);
+	
+	float NdotV=max(dot(normal,viewDir),MIN_N_DOT_V);
 	float NdotL=saturate(dot(normal,L));
 	float NdotH=saturate(dot(normal,H));
 	float LdotH=saturate(dot(L,H));
 
 #if defined(ANISOTROPY)
-	float3 Fr=AnisotropicLobe(pixel,V,L,H,NdotV,NdotL,NdotH,LdotH);
+	float3 Fr=AnisotropicLobe(pixel,viewDir,L,H,NdotV,NdotL,NdotH,LdotH);
 #else
 	float3 Fr=IsotropicLobe(pixel,H,NdotV,NdotL,NdotH,LdotH);
 #endif
 	float3 Fd=DiffuseLobe(pixel,NdotV,NdotL,LdotH);
-//
+
 // #if defined(REFRACTION)
 // 	Fd*=(1.0-pixel.transmission);
 // #endif
 //
-	float3 directcolor=Fd+Fr*pixel.energyCompensation;
+	float3 color=Fd+Fr*pixel.energyCompensation;
 
 #if defined(SHEEN_COLOR)
     color *= pixel.sheenScaling;
@@ -129,22 +130,24 @@ float4 GESETZ_BRDF_PBS(PixelParams pixel,
 
 #if defined(CLEAR_COAT)
 	float Fcc;
-	float clearCoat=ClearCoatLobe(pixel,H,NdotH,LdotH,Fcc);
-
+	float3 clearCoatNormalWS=shadingParameters.clearCoatNormalWS;
+	
+	float clearCoat=ClearCoatLobe(pixel,H,NdotH,LdotH,Fcc,clearCoatNormalWS);
 	float attenuation=1.0-Fcc;
-// #if /*defined(NORMAL)||*/defined(_NORMAL_MAP)||defined(CLEAR_COAT_NORMAL)
-// 	float clearCoatNdotL=saturate(dot());
-// 	color+=clearCoat*clearCoatNdotL;
-// 	
-// #endif
+#if defined(_NORMAL_MAP)||defined(CLEAR_COAT_NORMAL)
+	float clearCoatNdotL=saturate(dot(clearCoatNormalWS,L));
+	color+=clearCoat*clearCoatNdotL;
+	
+	return float4((color*light.color),1.0);
+#endif
 	color*=attenuation;
-	color+=ClearCoat;
+	color+=clearCoat;
 #endif
 
-	directcolor*=light.color*NdotL;
-	float3 indirectcolor=pixel.diffColor*gi.diffuse+pixel.F0*gi.specular;
+	//Compare to Unity *PI
+	color*=light.color*NdotL*PI;
 	
-	return float4(directcolor+indirectcolor,1.0);
+	return float4(color,1.0);
 
 	//BRDF1_Unity_PBS
 	// float unity_diffuseTerm=DisneyDiffuse(NdotV,NdotL,LdotH,pixel.perceptualRoughness)*NdotL;
@@ -159,9 +162,16 @@ float4 GESETZ_BRDF_PBS(PixelParams pixel,
  //    unity_specularTerm *= any(pixel.F0) ? 1.0 : 0.0;
 	// float grazingTerm=saturate(1.0-pixel.roughness+(1-OneMinusReflectivity));
  //
-	// return float4(pixel.diffColor*(gi.diffuse+light.color*unity_diffuseTerm)+
+	// return float4(
+	// //Direct Diffuse
+	// pixel.diffColor*light.color*unity_diffuseTerm+
+	// // Indirect Diffuse
+	// pixel.diffColor*gi.diffuse+
+	// //Direct Specular
 	// unity_specularTerm*light.color*FresnelTerm(pixel.F0,LdotH)+
-	// surfaceReduction*gi.specular*FresnelLerp(pixel.F0,grazingTerm,NdotV),1.0);
+	// // Indirect Specular 
+	// surfaceReduction*gi.specular*FresnelLerp(pixel.F0,grazingTerm,NdotV)
+	// ,1.0);
 }
 
 // //Cloth

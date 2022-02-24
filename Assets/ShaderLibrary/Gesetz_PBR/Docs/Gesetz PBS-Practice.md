@@ -1,28 +1,10 @@
 
 
-RP core
-AreaLight.hldl
-BC6H.hlsl
-
-BSDF.hlsl
-
-ImageBasedLighting.hlsl
-
-
-
-
-
-
-
-## 实现方案
-
-### Direct Lighting
+## 标椎模型
 
 #### **Diffuse Term:**
 
 Lambertian Diffuse；[Burley 12] Disney Diffuse  
-
-
 
 
 
@@ -33,10 +15,6 @@ Cook-Torrance 镜面微表面模型(Specular ):
 GGX NDF +G Term: Smith-GGX Height-  Mask-Shadow ??
 
 Schlick Fresnel  y
-
-
-
-
 
 
 
@@ -52,25 +30,75 @@ IBL(Image Based Lighting)——Light probe(光照探头)，Reflection probe(反�
 
 
 
-
-
-参数化
-
+### 参数化
 
 
 
-
-对Catlike Coding /Unity/Rendering ——Lighting Shader 的修改项：
-
-1.
+### Clear Coat
 
 
 
-2.TBN 
-
-3.IBL
+### Anisotropy
 
 
+
+## 结果展示
+
+### Shandard Model
+
+![](..\Docs\images\Standard.JPG)
+
+Dielectrics-Reflectance 1.0-0.0 Metallic 0.0 Roughness 0.0
+
+Roughness(Metal) 1.0-0.0
+
+Roughness(Dielectrics) 1.0-0.0
+
+Metallic 1.0-0.0
+
+#### Clear Coat
+
+![](..\Docs\images\ClearCoat.JPG)
+
+CleatCoatRoughness 1.0-0.0
+
+ClearCoat 1.0-0.0
+
+#### Anisotropy
+
+![](..\Docs\images\Anisotropy.JPG)
+
+Anisotropy 1.0-0.0
+
+![](..\Docs\images\Anisotropy -1.0 1.0.JPG)
+
+Anisotropy 1.0, -1.0
+
+#### Sheen
+
+![](..\Docs\images\Sheen.JPG)
+
+#### PBR 模型展示
+
+注：为了与Unity Standard 匹配，模型展示部分，光照模型 *PI；
+
+![](..\Docs\images\Cerberus_LP Gesetz.JPG)
+
+![](..\Docs\images\monkey(left-Gesetz right-Standard).JPG)
+
+monkey left-Gesetz right-Standard
+
+![](..\Docs\images\monkey-back(left-Standard right-Gesetz).JPG)
+
+monkey-back(left-Standard right-Gesetz)
+
+![](..\Docs\images\Rustediron-Ball.JPG)
+
+
+
+#### PBR 人物模型
+
+TODO
 
 ## Further Work 
 
@@ -80,7 +108,8 @@ IBL(Image Based Lighting)——Light probe(光照探头)，Reflection probe(反�
 
 
 
-- IBL:添加平面反射，SSR(Screen Space Reflection);
+- IBL:
+  - 添加平面反射，SSR(Screen Space Reflection);
 
 ### TODO List:
 
@@ -97,3 +126,8 @@ Shading Mode：
 
 - 使用线性颜色空间；
 - 
+
+
+
+## References
+

@@ -13,7 +13,7 @@
 		[Gamma] _Metallic ("Metallic", Range(0, 1)) = 0
 		
 		[NoScaleOffset] _RoughnessMap("Roughness Map",2D)="white"{}
-		_Roughness ("Roughness", Range(0, 1)) = 0.95
+		_Roughness ("Roughness", Range(0, 1)) = 1.0
 		
 		//仅电介质  0.5->F0 0.04  --UE Specular >0.35
 		_Reflectance("Reflectance",Range(0, 1))=0.5
@@ -38,7 +38,7 @@
 		[HideInInspector] _DstBlend ("_DstBlend", Float) = 0
 		[HideInInspector] _ZWrite ("_ZWrite", Float) = 1
 		
-		//Anisotropic
+		//Anisotropy
 		//[-1,1] 当此值为正时, 各向异性位于切线方向, 负值则沿副切线方向.
 		_Anisotropy ("Anisotropy", Range(-1, 1)) = 0.0
 		//线性RGB, 编码切线空间中的方向向量
@@ -46,14 +46,25 @@
 		
 		//ClearCoat
 		//0||1
+		[NoScaleOffset] _ClearCoat_Map ("ClearCoat", 2D) = "white" {}
 		_ClearCoat ("ClearCoat", Range(0, 1)) = 0.0
 		//Remapping [0,0.6]
 		_ClearCoatRoughness ("ClearCoatRoughness",Range(0,1))=0.1
-		[NoScaleOffset] _ClearCoatNormal ("ClearCoat Normal", 2D) = "bump" {}
+		[NoScaleOffset] _ClearCoat_NormalMap ("ClearCoat Normal", 2D) = "bump" {}
+		
+		//Sheen
+		_SheenColor("Sheen Color", Color) = (1, 1, 1)
+		_SheenRoughness ("Sheen Roughness",Range(0,1))=0.1
 		
 		//PBR LUT 
 		//标准模型 使用近似方法
-		//[HideInInspector]_DFG("DFG_LUT",2D)="white" {}
+		_DFG("DFG LUT",2D)="" {}
+		_DFG_CLOTH("DFG CLOTH",2D)=""{}
+		//
+		[HideInInspector] 
+		_specularAntiAliasingVariance ("specularAntiAliasingVariance", Range(0, 1)) = 0.15
+		[HideInInspector] 
+		_specularAntiAliasingThreshold ("specularAntiAliasingThreshold", Range(0, 1)) = 0.2
 	}
 
 	CGINCLUDE
@@ -86,9 +97,6 @@
 
 			#pragma shader_feature _ _RENDERING_CUTOUT _RENDERING_FADE _RENDERING_TRANSPARENT
 			#pragma shader_feature _METALLIC_MAP
-			#pragma shader_feature _ ROUGHNESS_MAP _ROUGHNESS_ALBEDO _ROUGHNESS_METALLIC
-
-			#pragma shader_feature REFLECTANCE
 
 			#pragma shader_feature _NORMAL_MAP
 			#pragma shader_feature _OCCLUSION_MAP
@@ -102,17 +110,27 @@
 			#pragma shader_feature _DETAIL_NORMAL_MAP
 
 			//Filament Extended
+			#pragma shader_feature _ ROUGHNESS_MAP _ROUGHNESS_ALBEDO _ROUGHNESS_METALLIC
+			#pragma shader_feature REFLECTANCE
 			//Anisotropic
-			// #pragma shader_feature ANISOTROPY
+			#pragma shader_feature ANISOTROPY
 
 			//ClearCoat
-			// #pragma shader_feature CLEAR_COAT
-			// #pragma shader_feature CLEAR_COAT_NORMAL
+			#pragma shader_feature CLEAR_COAT
+			#pragma shader_feature CLEARCOAT_MAP
+			#pragma shader_feature CLEAR_COAT_ROUGHNESS
+			#pragma shader_feature CLEAR_COAT_NORMAL
+			// #pragma shader_feature CLEAR_COAT_IOR_CHANGE
 			
-
-			// #pragma shader_feature GEOMETRIC_SPECULAR_AA
+			//Sheen 
+			#pragma shader_feature SHEEN_COLOR
+			
+			//SpecularAntiAliasing
+			#pragma shader_feature GEOMETRIC_SPECULAR_AA
 			
 			// #pragma shader_feature BENT_NORMAL
+			
+			// Subsurface
 			// #pragma shader_feature SUBSURFACE_COLOR
 			
 			// #pragma shader_feature _ REFRACTION
