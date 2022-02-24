@@ -512,8 +512,7 @@ FragmentOutput Gesetz_FragmentProgram (Interpolators i) {
 	ApplyParallax(i);
 
 	ShadingParameters shadingParameters=GetShadingParameters(i);
-	//InitializeFragmentNormal(i);
-	
+
 	MaterialInputs material;
 	InitMaterialInputs(material);
 
@@ -527,17 +526,135 @@ FragmentOutput Gesetz_FragmentProgram (Interpolators i) {
 	PixelParams pixel;
 	getPixelParams(material,pixel,shadingParameters);
 
-	float oneMinusReflectivity=OneMinusReflectivityFromMetallic(material.metallic);
-
-	#if defined(_RENDERING_TRANSPARENT)
-		pixel.diffColor *= alpha;
-		alpha = 1 - oneMinusReflectivity + alpha * oneMinusReflectivity;
-	#endif
+	// float oneMinusReflectivity=OneMinusReflectivityFromMetallic(material.metallic);
+	//
+	// #if defined(_RENDERING_TRANSPARENT)
+	// 	pixel.diffColor *= alpha;
+	// 	alpha = 1 - oneMinusReflectivity + alpha * oneMinusReflectivity;
+	// #endif
 
 	UnityLight light=CreateLight(i);
 	// UnityIndirect GI=createIndirectLight(i,shadingParameters,material);
 	
 	float4 color=GESETZ_BRDF_PBS(pixel,shadingParameters,light);
+
+	evaluateIBL(material,pixel,shadingParameters,color);
+	
+	color.rgb += material.emissive;
+	#if defined(_RENDERING_FADE) || defined(_RENDERING_TRANSPARENT)
+		color.a = alpha;
+	#endif
+	
+	FragmentOutput output;
+	#if defined(DEFERRED_PASS)
+		#if !defined(UNITY_HDR_ON)
+			color.rgb = exp2(-color.rgb);
+		#endif
+		output.gBuffer0.rgb = pixel.diffColor;
+		output.gBuffer0.a = material.ambientOcclusion;
+		output.gBuffer1.rgb = pixel.F0;
+		output.gBuffer1.a = material.roughness;
+		output.gBuffer2 = float4(shadingParameters.normalWS * 0.5 + 0.5, 1);
+		output.gBuffer3 = color;
+
+		#if defined(SHADOWS_SHADOWMASK) && (UNITY_ALLOWED_MRT_COUNT > 4)
+			float2 shadowUV = 0;
+			#if defined(LIGHTMAP_ON)
+				shadowUV = i.lightmapUV;
+			#endif
+			output.gBuffer4 =
+				UnityGetRawBakedOcclusions(shadowUV, i.worldPos.xyz);
+		#endif
+	#else
+		output.color = ApplyFog(color, i);
+	#endif
+	return output;
+}
+
+FragmentOutput Gesetz_Cloth_FragmentProgram (Interpolators i) {
+	UNITY_SETUP_INSTANCE_ID(i);
+	#if defined(LOD_FADE_CROSSFADE)
+		UnityApplyDitherCrossFade(i.vpos);
+	#endif
+
+	ShadingParameters shadingParameters=GetShadingParameters(i);
+
+	MaterialInputs material;
+	InitMaterialInputs(material);
+
+	prepareMaterial(material,i);
+
+	float alpha = material.baseColor.a;
+	#if defined(_RENDERING_CUTOUT)
+		clip(alpha - _Cutoff);
+	#endif
+
+	PixelParams pixel;
+	getPixelParams(material,pixel,shadingParameters);
+
+
+	UnityLight light=CreateLight(i);
+
+	float4 color=GESETZ_CLOTH_PBS(pixel,shadingParameters,light);
+
+	evaluateIBL(material,pixel,shadingParameters,color);
+	
+	color.rgb += material.emissive;
+	#if defined(_RENDERING_FADE) || defined(_RENDERING_TRANSPARENT)
+		color.a = alpha;
+	#endif
+	
+	FragmentOutput output;
+	#if defined(DEFERRED_PASS)
+		#if !defined(UNITY_HDR_ON)
+			color.rgb = exp2(-color.rgb);
+		#endif
+		output.gBuffer0.rgb = pixel.diffColor;
+		output.gBuffer0.a = material.ambientOcclusion;
+		output.gBuffer1.rgb = pixel.F0;
+		output.gBuffer1.a = material.roughness;
+		output.gBuffer2 = float4(shadingParameters.normalWS * 0.5 + 0.5, 1);
+		output.gBuffer3 = color;
+
+		#if defined(SHADOWS_SHADOWMASK) && (UNITY_ALLOWED_MRT_COUNT > 4)
+			float2 shadowUV = 0;
+			#if defined(LIGHTMAP_ON)
+				shadowUV = i.lightmapUV;
+			#endif
+			output.gBuffer4 =
+				UnityGetRawBakedOcclusions(shadowUV, i.worldPos.xyz);
+		#endif
+	#else
+		output.color = ApplyFog(color, i);
+	#endif
+	return output;
+}
+
+FragmentOutput Gesetz_SubSurface_FragmentProgram (Interpolators i) {
+	UNITY_SETUP_INSTANCE_ID(i);
+	#if defined(LOD_FADE_CROSSFADE)
+		UnityApplyDitherCrossFade(i.vpos);
+	#endif
+
+	ShadingParameters shadingParameters=GetShadingParameters(i);
+
+	MaterialInputs material;
+	InitMaterialInputs(material);
+
+	prepareMaterial(material,i);
+
+	float alpha = material.baseColor.a;
+	#if defined(_RENDERING_CUTOUT)
+		clip(alpha - _Cutoff);
+	#endif
+
+	PixelParams pixel;
+	getPixelParams(material,pixel,shadingParameters);
+
+
+	UnityLight light=CreateLight(i);
+
+	float4 color=GESETZ_SUBSURFACE_PBS(pixel,shadingParameters,light);
 
 	evaluateIBL(material,pixel,shadingParameters,color);
 	

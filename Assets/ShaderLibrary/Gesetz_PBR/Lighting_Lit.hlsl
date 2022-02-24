@@ -187,13 +187,13 @@ float normalFiltering(float perceptualRoughness, const float3 worldNormal)
 //     // Remaps the roughness to a perceptually linear roughness (roughness^2)
 //     pixel.roughness = perceptualRoughnessToRoughness(pixel.perceptualRoughness);
 // }
-void getSubsurfacePixelParams(const MaterialInputs material, inout PixelParams pixel) {
-#if defined(SHADING_MODEL_SUBSURFACE)
-    pixel.subsurfacePower = material.subsurfacePower;
-    pixel.subsurfaceColor = material.subsurfaceColor;
-    pixel.thickness = saturate(material.thickness);
-#endif
-}
+// void getSubsurfacePixelParams(const MaterialInputs material, inout PixelParams pixel) {
+// #if defined(SHADING_MODEL_SUBSURFACE)
+//     pixel.subsurfacePower = material.subsurfacePower;
+//     pixel.subsurfaceColor = material.subsurfaceColor;
+//     pixel.thickness = saturate(material.thickness);
+// #endif
+// }
 // void getEnergyCompensationPixelParams(const MaterialInputs material,out PixelParams pixel,float NdotV)
 // {
 // 	//[Lazarov 13] 
@@ -224,14 +224,70 @@ void getPixelParams(const MaterialInputs material,out PixelParams pixel,const Sh
 	// getCommonPixelParams(material,pixel);
 	float4 baseColor=material.baseColor;
 
+#if defined(SHADING_MODEL_SPECULAR_GLOSSINESS)
+    // // This is from KHR_materials_pbrSpecularGlossiness.
+    float3 specularColor = material.specularColor;
+    float metallic = computeMetallicFromSpecularColor(specularColor);
+    
+    pixel.diffColor = computeDiffuseColor(baseColor, metallic);
+    pixel.F0 = specularColor;
+#elif !defined(SHADING_MODEL_CLOTH)
     pixel.diffColor = computeDiffuseColor(baseColor, material.metallic);
+#if !defined(SHADING_MODEL_SUBSURFACE) && (!defined(REFLECTANCE) && defined(IOR))
+    float reflectance = iorToF0(max(1.0, material.ior), 1.0);
+#else
+    // Assumes an interface from air to an IOR of 1.5 for dielectrics
     float reflectance = computeDielectricF0(material.reflectance);
-
+#endif
     pixel.F0 = computeF0(baseColor, material.metallic, reflectance);
+#else
+    pixel.diffColor = baseColor.rgb;
+    pixel.F0 = material.sheenColor;
 	
 #if defined(SUBSURFACE_COLOR)
     pixel.subsurfaceColor = material.subsurfaceColor;
 #endif
+	
+#endif
+
+// #if !defined(SHADING_MODEL_CLOTH) && !defined(SHADING_MODEL_SUBSURFACE)
+// #if defined(REFRACTION)
+//     // Air's Index of refraction is 1.000277 at STP but everybody uses 1.0
+//     const float airIor = 1.0;
+// #if !defined(IOR)
+//     // [common case] ior is not set in the material, deduce it from F0
+//     float materialor = f0ToIor(pixel.F0.g);
+// #else
+//     // if ior is set in the material, use it (can lead to unrealistic materials)
+//     float materialor = max(1.0, material.ior);
+// #endif
+//     pixel.etaIR = airIor / materialor;  // air -> material
+//     pixel.etaRI = materialor / airIor;  // material -> air
+// #if defined(TRANSMISSION)
+//     pixel.transmission = saturate(material.transmission);
+// #else
+//     pixel.transmission = 1.0;
+// #endif
+// #if defined(ABSORPTION)
+// #if defined(THICKNESS) || defined(MICRO_THICKNESS)
+//     pixel.absorption = max(vec3(0.0), material.absorption);
+// #else
+//     pixel.absorption = saturate(material.absorption);
+// #endif
+// #else
+//     pixel.absorption = vec3(0.0);
+// #endif
+// #if defined(THICKNESS)
+//     pixel.thickness = max(0.0, material.thickness);
+// #endif
+// #if defined(MICRO_THICKNESS) && (REFRACTION_TYPE == REFRACTION_TYPE_THIN)
+//     pixel.uThickness = max(0.0, material.microThickness);
+// #else
+//     pixel.uThickness = 0.0;
+// #endif
+// #endif
+// #endif
+	
 	
 	//getSheenPixelParams(material,pixel,geometricNormal)
 #if defined(SHEEN_COLOR) && !defined(SHADING_MODEL_CLOTH) && !defined(SHADING_MODEL_SUBSURFACE)
@@ -264,6 +320,15 @@ void getPixelParams(const MaterialInputs material,out PixelParams pixel,const Sh
 #endif
     pixel.clearCoatPerceptualRoughness = clearCoatPerceptualRoughness;
     pixel.clearCoatRoughness = perceptualRoughnessToRoughness(clearCoatPerceptualRoughness);
+
+// #if defined(CLEAR_COAT_IOR_CHANGE)
+//     // The base layer's f0 is computed assuming an interface from air to an IOR
+//     // of 1.5, but the clear coat layer forms an interface from IOR 1.5 to IOR
+//     // 1.5. We recompute f0 by first computing its IOR, then reconverting to f0
+//     // by using the correct interface
+//     pixel.f0 = mix(pixel.f0, f0ClearCoatToSurface(pixel.f0), pixel.clearCoat);
+// #endif
+
 #endif
 
 	// getRoughnessPixelParams(material,pixel,geometricNormal);
@@ -286,12 +351,13 @@ void getPixelParams(const MaterialInputs material,out PixelParams pixel,const Sh
     // Remaps the roughness to a perceptually linear roughness (roughness^2)
     pixel.roughness = perceptualRoughnessToRoughness(pixel.perceptualRoughness);
 
-// 	//getSubsurfacePixelParams(material,pixel)
-// #if defined(SHADING_MODEL_SUBSURFACE)
-//     pixel.subsurfacePower = material.subsurfacePower;
-//     pixel.subsurfaceColor = material.subsurfaceColor;
-//     pixel.thickness = saturate(material.thickness);
-// #endif
+	
+	//getSubsurfacePixelParams(material,pixel)
+#if defined(SHADING_MODEL_SUBSURFACE)
+    pixel.subsurfacePower = material.subsurfacePower;
+    pixel.subsurfaceColor = material.subsurfaceColor;
+    pixel.thickness = saturate(material.thickness);
+#endif
     	
 	// getAnisotropyPixelParams(material,pixel,shadingParameters);
 	float3x3 tangentToWorld=shadingParameters.tangentToWorld;
@@ -320,9 +386,7 @@ void getPixelParams(const MaterialInputs material,out PixelParams pixel,const Sh
 // #endif
 #if !defined(SHADING_MODEL_CLOTH)
 #if defined(SHEEN_COLOR)
-    // pixel.sheenDFG = Prefiltered_DFG_CLOTH_LUT(pixel.sheenPerceptualRoughness,NdotV).z;
-    pixel.sheenDFG = Prefiltered_DFG(pixel.sheenPerceptualRoughness,NdotV).z;
-
+    pixel.sheenDFG = Prefiltered_DFG_CLOTH_LUT(pixel.sheenPerceptualRoughness,NdotV).z;
     pixel.sheenScaling = 1.0 - max(pixel.sheenColor.x,max(pixel.sheenColor.y,pixel.sheenColor.z)) * pixel.sheenDFG;
 #endif
 #endif

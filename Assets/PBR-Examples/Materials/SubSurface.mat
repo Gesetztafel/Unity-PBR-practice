@@ -7,9 +7,9 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Group1
-  m_Shader: {fileID: 4800000, guid: 41237f08fc7d3f14cb1748fde56d4f6e, type: 3}
-  m_ShaderKeywords: SHEEN_COLOR
+  m_Name: SubSurface
+  m_Shader: {fileID: 4800000, guid: b34206d518df46c48825c14b9def9ebe, type: 3}
+  m_ShaderKeywords: _ROUGHNESS_METALLIC
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -19,31 +19,11 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
-    - _AnisotropyDirection:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
     - _BumpMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
-    - _ClearCoatNormal:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _ClearCoat_Map:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _ClearCoat_NormalMap:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
     - _DFG:
-        m_Texture: {fileID: 2800000, guid: 5b3ac0c1e4750eb4e96fe2c55acbc623, type: 3}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - _DFG_CLOTH:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -96,10 +76,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
-    - _Anisotropy: 0
     - _BumpScale: 1
-    - _ClearCoat: 0
-    - _ClearCoatRoughness: 0.1
     - _Cutoff: 0.5
     - _DetailBumpScale: 1
     - _DetailNormalMapScale: 1
@@ -112,19 +89,18 @@ Material:
     - _OcclusionStrength: 1
     - _Parallax: 0.02
     - _ParallaxStrength: 0
-    - _Reflectance: 0.59
+    - _Reflectance: 0.5
     - _Roughness: 1
-    - _SheenRoughness: 1
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
+    - _SubSurfacePower: 0
+    - _Thickness: 0
     - _UVSec: 0
     - _ZWrite: 1
-    - _specularAntiAliasingThreshold: 0.2
-    - _specularAntiAliasingVariance: 0.15
     m_Colors:
-    - _Color: {r: 0, g: 0, b: 0, a: 1}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _Emission: {r: 0, g: 0, b: 0, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _SheenColor: {r: 1, g: 1, b: 1, a: 1}
+    - _SubSurfaceColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []

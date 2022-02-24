@@ -4,7 +4,6 @@
 #include "BRDF.hlsl"
 #include "Lighting_Common.hlsl"
 
-
 #include "UnityStandardBRDF.cginc"
 
 //Standard
@@ -117,10 +116,10 @@ float4 GESETZ_BRDF_PBS(PixelParams pixel,ShadingParameters shadingParameters,
 #endif
 	float3 Fd=DiffuseLobe(pixel,NdotV,NdotL,LdotH);
 
-// #if defined(REFRACTION)
-// 	Fd*=(1.0-pixel.transmission);
-// #endif
-//
+#if defined(REFRACTION)
+	Fd*=(1.0-pixel.transmission);
+#endif
+
 	float3 color=Fd+Fr*pixel.energyCompensation;
 
 #if defined(SHEEN_COLOR)
@@ -145,7 +144,7 @@ float4 GESETZ_BRDF_PBS(PixelParams pixel,ShadingParameters shadingParameters,
 #endif
 
 	//Compare to Unity *PI
-	color*=light.color*NdotL*PI;
+	color*=light.color*NdotL;
 	
 	return float4(color,1.0);
 
@@ -174,38 +173,94 @@ float4 GESETZ_BRDF_PBS(PixelParams pixel,ShadingParameters shadingParameters,
 	// ,1.0);
 }
 
-// //Cloth
-// float4 GESETZ_CLOTH_PBS(half3 diffColor,half3 specColor,half oneMinusReflectivity,half smothness,
-// 					float3 normal,float3 viewDir,
-// 					UnityLight light,UnityIndirect gi)
-// {
-// 	float3 H=normalize(viewDir+light.dir);
-//
-// 	float NdotL=light.ndotl;
-// 	float NdotH=saturate(dot(normal,H));
-// 	float LdotH=saturate(dot(light.dir,H));
-// 	//Specular BRDF
-// 	float D;
-// 	float V;
-// 	float3 F;
-//
-// 	float3 Fr=(D*V)*F;
-//
-// 	//Diffuse BRDF
-// 	float diffuse;
-// //#if defined(SUBSURFACE_COLOR)
-// 	diffuse*=Fd_Wrap(dot(normal,light.dir),0.5);
-// //endif
-// 	float3 Fd=diffuse*diffColor;
-//
-// 	float3 color=Fd+Fr;
-// 	
-// 	return color;
-// }
+//Cloth
+float4 GESETZ_CLOTH_PBS(PixelParams pixel,ShadingParameters shadingParameters,
+					UnityLight light)
+{
+	float3 L=light.dir;
+	float3 viewDir=shadingParameters.viewDir;
+	float3 normal=shadingParameters.normalWS;
+	
+	//SafeNormalize
+	float3 H=normalize(viewDir+L);
+	
+	float NdotV=max(dot(normal,viewDir),MIN_N_DOT_V);
+	float NdotL=saturate(dot(normal,L));
+	float NdotH=saturate(dot(normal,H));
+	float LdotH=saturate(dot(L,H));
+	//Specular BRDF
+	float D=Distribution_Cloth(pixel.roughness,NdotH);
+	float V=Visibility_Cloth(NdotV,NdotL);
+	float3 F=pixel.F0;
+
+	float3 Fr=(D*V)*F;
+
+	//Diffuse BRDF
+	float diffuse=Diffuse(pixel.roughness,NdotV,NdotL,LdotH);
+#if defined(SUBSURFACE_COLOR)
+	diffuse*=Fd_Wrap(dot(normal,light.dir),0.5);
+#endif
+	float3 Fd=diffuse*pixel.diffColor;
+
+#if defined(SUBSURFACE_COLOR)
+    // Cheap subsurface scatter
+    Fd *= saturate(pixel.subsurfaceColor + NdotL);
+    // We need to apply NoL separately to the specular lobe since we already took
+    // it into account in the diffuse lobe
+    float3 color = Fd + Fr * NdotL;
+    color *= light.color;
+#else
+    float3 color = Fd + Fr;
+    color *= light.color * NdotL;
+#endif
+	
+	return float4(color,1.0);
+}
 
 //Subsurface
-// TODO
 
+float4 GESETZ_SUBSURFACE_PBS(PixelParams pixel,ShadingParameters shadingParameters,UnityLight light)
+{
+	float3 L=light.dir;
+	float3 viewDir=shadingParameters.viewDir;
+	float3 normal=shadingParameters.normalWS;
+	
+	//SafeNormalize
+	float3 H=normalize(viewDir+L);
+	
+	float NdotV=max(dot(normal,viewDir),MIN_N_DOT_V);
+	float NdotL=saturate(dot(normal,L));
+	float NdotH=saturate(dot(normal,H));
+	float LdotH=saturate(dot(L,H));
 
+	float3 Fr=0.0;
+	if(NdotL>0.0)
+	{
+		// specular BRDF
+		float D=Distribution(pixel.roughness,NdotH,H);
+		float V=Visibility(pixel.roughness,NdotV,NdotL);
+		float3 F=Fresnel(pixel.F0,LdotH);
+		
+		Fr=(D*V)*F*pixel.energyCompensation;
+	}
+
+	// diffuse BRDF
+	float3 Fd=pixel.diffColor*Diffuse(pixel.roughness,NdotV,NdotL,LdotH);
+	
+	// NoL does not apply to transmitted light
+	float3 color=(Fd+Fr)*(NdotL/**occlusion*/);
+	// subsurface scattering
+    // Use a spherical gaussian approximation of pow() for forwardScattering
+    // We could include distortion by adding shading_normal * distortion to light.l
+	
+	// float scatterVdotH=saturate(dot(viewDir,-L));
+	// float fowardScatter=exp2(scatterVdotH*pixel.subsurfacePower-pixel.subsurfacePower);
+	// float backScatter=saturate(NdotL*pixel.thickness+(1.0-pixel.thickness))*0.5;
+	// float subsurface=lerp(backScatter,1.0,fowardScatter)*(1.0-pixel.thickness);
+	// color+=pixel.subsurfaceColor*(subsurface*Fd_Lambert());
+
+	// TODO: apply occlusion to the transmitted light
+	return float4(color*light.color,1.0);
+}
 
 #endif

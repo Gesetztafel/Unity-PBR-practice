@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -7,7 +8,7 @@ public class Gesetz_ClothShaderGUI : ShaderGUI
 
     enum RoughnessSource
     {
-        Uniform, RoughnessMap, Albedo, Metallic
+        Uniform, RoughnessMap, Albedo
     }
 
     enum RenderingMode
@@ -75,7 +76,12 @@ public class Gesetz_ClothShaderGUI : ShaderGUI
 
         DoMain();
         DoSecondary();
+
+        DoSheen();
+
         DoAdvanced();
+
+        DoLUT_CLOTH();
     }
 
     void DoRenderingMode()
@@ -157,12 +163,10 @@ public class Gesetz_ClothShaderGUI : ShaderGUI
         {
             DoAlphaCutoff();
         }
-        DoMetallic();
 
         DoRoughnessMap();
         DoRoughness();
 
-        DoReflectance();
         DoNormals();
 
         DoOcclusion();
@@ -194,83 +198,6 @@ public class Gesetz_ClothShaderGUI : ShaderGUI
         }
     }
 
-    void DoMetallic()
-    {
-        MaterialProperty map = FindProperty("_MetallicMap");
-        Texture tex = map.textureValue;
-        EditorGUI.BeginChangeCheck();
-        editor.TexturePropertySingleLine(
-            MakeLabel(map, "Metallic (R)"), map,
-            tex ? null : FindProperty("_Metallic")
-        );
-        if (EditorGUI.EndChangeCheck() && tex != map.textureValue)
-        {
-            SetKeyword("_METALLIC_MAP", map.textureValue);
-        }
-    }
-
-    void DoRoughnessMap()
-    {
-        MaterialProperty map = FindProperty("_RoughnessMap");
-        Texture tex = map.textureValue;
-        EditorGUI.BeginChangeCheck();
-        editor.TexturePropertySingleLine(
-            MakeLabel(map, "Roughness (R)"), map,
-            tex ? null : FindProperty("_Roughness")
-        );
-
-        if (EditorGUI.EndChangeCheck() && tex != map.textureValue)
-        {
-            SetKeyword("ROUGHNESS_MAP", map.textureValue);
-        }
-    }
-
-    void DoRoughness()
-    {
-        RoughnessSource source = RoughnessSource.Uniform;
-
-        if (IsKeywordEnabled("ROUGHNESS_MAP"))
-        {
-            source = RoughnessSource.RoughnessMap;
-        }
-        else if (IsKeywordEnabled("_ROUGHNESS_ALBEDO"))
-        {
-            source = RoughnessSource.Albedo;
-        }
-        else if (IsKeywordEnabled("_ROUGHNESS_METALLIC"))
-        {
-            source = RoughnessSource.Metallic;
-        }
-
-        EditorGUI.BeginChangeCheck();
-        source = (RoughnessSource)EditorGUILayout.EnumPopup(
-            MakeLabel("Source"), source
-        );
-        if (EditorGUI.EndChangeCheck())
-        {
-            RecordAction("Roughness Source");
-            SetKeyword("ROUGHNESS_MAP", source == RoughnessSource.RoughnessMap);
-            SetKeyword("_ROUGHNESS_ALBEDO", source == RoughnessSource.Albedo);
-            SetKeyword(
-                "_ROUGHNESS_METALLIC", source == RoughnessSource.Metallic
-            );
-        }
-    }
-
-    void DoReflectance()
-    {
-        MaterialProperty slider = FindProperty("_Reflectance");
-        EditorGUI.indentLevel += 2;
-        editor.ShaderProperty(slider, MakeLabel(slider));
-        EditorGUI.indentLevel += 1;
-        EditorGUI.BeginChangeCheck();
-
-        if (EditorGUI.EndChangeCheck())
-        {
-            SetKeyword("_SMOOTHNESS_ALBEDO", true);
-        }
-        EditorGUI.indentLevel -= 3;
-    }
 
     void DoOcclusion()
     {
@@ -412,5 +339,85 @@ public class Gesetz_ClothShaderGUI : ShaderGUI
     void RecordAction(string label)
     {
         editor.RegisterPropertyChangeUndo(label);
+    }
+
+
+    void DoRoughnessMap()
+    {
+        MaterialProperty map = FindProperty("_RoughnessMap");
+        Texture tex = map.textureValue;
+        EditorGUI.BeginChangeCheck();
+        editor.TexturePropertySingleLine(
+            MakeLabel(map, "Roughness"), map,
+            tex ? null : FindProperty("_Roughness")
+        );
+
+        if (EditorGUI.EndChangeCheck() && tex != map.textureValue)
+        {
+            SetKeyword("ROUGHNESS_MAP", map.textureValue);
+        }
+    }
+
+    void DoRoughness()
+    {
+        RoughnessSource source = RoughnessSource.Uniform;
+
+        if (IsKeywordEnabled("ROUGHNESS_MAP"))
+        {
+            source = RoughnessSource.RoughnessMap;
+        }
+        else if (IsKeywordEnabled("_ROUGHNESS_ALBEDO"))
+        {
+            source = RoughnessSource.Albedo;
+        }
+
+        EditorGUI.BeginChangeCheck();
+        source = (RoughnessSource)EditorGUILayout.EnumPopup(
+            MakeLabel("Source"), source
+        );
+        if (EditorGUI.EndChangeCheck())
+        {
+            RecordAction("Roughness Source");
+            SetKeyword("ROUGHNESS_MAP", source == RoughnessSource.RoughnessMap);
+            SetKeyword("_ROUGHNESS_ALBEDO", source == RoughnessSource.Albedo);
+        }
+    }
+
+    void DoSheen()
+    {
+        GUILayout.Label("Sheen Color", EditorStyles.boldLabel);
+
+        MaterialProperty sheenColor = FindProperty("_SheenColor");
+        editor.ShaderProperty(sheenColor, MakeLabel(sheenColor));
+
+
+        bool isSubSurfaceColor = Array.IndexOf(target.shaderKeywords, "SUBSURFACE_COLOR") != -1;
+        EditorGUI.BeginChangeCheck();
+        isSubSurfaceColor = EditorGUILayout.Toggle("SubSurface Color", isSubSurfaceColor);
+        if (EditorGUI.EndChangeCheck())
+        {
+            SetKeyword("SUBSURFACE_COLOR", isSubSurfaceColor);
+        }
+
+        if (isSubSurfaceColor)
+        {
+            DoSubSurfaceColor();
+        }
+    }
+
+    void DoSubSurfaceColor()
+    {
+        MaterialProperty sheenColor = FindProperty("_SubSurfaceColor");
+        editor.ShaderProperty(sheenColor, MakeLabel(sheenColor));
+    }
+
+    void DoLUT_CLOTH()
+    {
+        MaterialProperty map = FindProperty("_DFG_CLOTH");
+        Texture tex = map.textureValue;
+        EditorGUI.BeginChangeCheck();
+        editor.TexturePropertySingleLine(
+            MakeLabel(map, "DFG LUT CLOTH"), map
+        );
     }
 }

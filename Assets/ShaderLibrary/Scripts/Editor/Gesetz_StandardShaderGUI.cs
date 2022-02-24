@@ -221,54 +221,6 @@ public class Gesetz_StandardShaderGUI : ShaderGUI
         }
     }
 
-    void DoRoughnessMap()
-    {
-        MaterialProperty map = FindProperty("_RoughnessMap");
-        Texture tex = map.textureValue;
-        EditorGUI.BeginChangeCheck();
-        editor.TexturePropertySingleLine(
-            MakeLabel(map, "Roughness"), map,
-            tex ? null : FindProperty("_Roughness")
-            );
-
-        if (EditorGUI.EndChangeCheck() && tex != map.textureValue)
-        {
-            SetKeyword("ROUGHNESS_MAP", map.textureValue);
-        }
-    }
-
-    void DoRoughness()
-    {
-        RoughnessSource source = RoughnessSource.Uniform;
-
-        if (IsKeywordEnabled("ROUGHNESS_MAP"))
-        {
-            source = RoughnessSource.RoughnessMap;
-        }
-        else if (IsKeywordEnabled("_ROUGHNESS_ALBEDO"))
-        {
-            source = RoughnessSource.Albedo;
-        }
-        else if (IsKeywordEnabled("_ROUGHNESS_METALLIC"))
-        {
-            source = RoughnessSource.Metallic;
-        }
-
-        EditorGUI.BeginChangeCheck();
-        source = (RoughnessSource)EditorGUILayout.EnumPopup(
-            MakeLabel("Source"), source
-        );
-        if (EditorGUI.EndChangeCheck())
-        {
-            RecordAction("Roughness Source");
-            SetKeyword("ROUGHNESS_MAP", source == RoughnessSource.RoughnessMap);
-            SetKeyword("_ROUGHNESS_ALBEDO", source == RoughnessSource.Albedo);
-            SetKeyword(
-                "_ROUGHNESS_METALLIC", source == RoughnessSource.Metallic
-            );
-        }
-
-    }
 
     void DoParallax()
     {
@@ -426,6 +378,53 @@ public class Gesetz_StandardShaderGUI : ShaderGUI
         editor.RegisterPropertyChangeUndo(label);
     }
 
+    void DoRoughnessMap()
+    {
+        MaterialProperty map = FindProperty("_RoughnessMap");
+        Texture tex = map.textureValue;
+        EditorGUI.BeginChangeCheck();
+        editor.TexturePropertySingleLine(
+            MakeLabel(map, "Roughness"), map,
+            tex ? null : FindProperty("_Roughness")
+            );
+
+        if (EditorGUI.EndChangeCheck() && tex != map.textureValue)
+        {
+            SetKeyword("ROUGHNESS_MAP", map.textureValue);
+        }
+    }
+
+    void DoRoughness()
+    {
+        RoughnessSource source = RoughnessSource.Uniform;
+
+        if (IsKeywordEnabled("ROUGHNESS_MAP"))
+        {
+            source = RoughnessSource.RoughnessMap;
+        }
+        else if (IsKeywordEnabled("_ROUGHNESS_ALBEDO"))
+        {
+            source = RoughnessSource.Albedo;
+        }
+        else if (IsKeywordEnabled("_ROUGHNESS_METALLIC"))
+        {
+            source = RoughnessSource.Metallic;
+        }
+
+        EditorGUI.BeginChangeCheck();
+        source = (RoughnessSource)EditorGUILayout.EnumPopup(
+            MakeLabel("Source"), source
+        );
+        if (EditorGUI.EndChangeCheck())
+        {
+            RecordAction("Roughness Source");
+            SetKeyword("ROUGHNESS_MAP", source == RoughnessSource.RoughnessMap);
+            SetKeyword("_ROUGHNESS_ALBEDO", source == RoughnessSource.Albedo);
+            SetKeyword(
+                "_ROUGHNESS_METALLIC", source == RoughnessSource.Metallic
+            );
+        }
+    }
 
     void DoReflectance()
     {

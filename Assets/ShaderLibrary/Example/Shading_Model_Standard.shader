@@ -127,13 +127,14 @@
 			
 			//SpecularAntiAliasing
 			#pragma shader_feature GEOMETRIC_SPECULAR_AA
+
+			// #pragma shader_feature _ REFRACTION
 			
 			// #pragma shader_feature BENT_NORMAL
 			
 			// Subsurface
 			// #pragma shader_feature SUBSURFACE_COLOR
 			
-			// #pragma shader_feature _ REFRACTION
 			// #pragma shader_feature _ ABSORPTION
 			// #pragma shader_feature _ TRANSMISSION
 			// #pragma shader_feature _ IOR
@@ -170,12 +171,29 @@
 
 			#pragma shader_feature _ _RENDERING_CUTOUT _RENDERING_FADE _RENDERING_TRANSPARENT
 			#pragma shader_feature _METALLIC_MAP
-			#pragma shader_feature _ ROUGHNESS_MAP _ROUGHNESS_ALBEDO _ROUGHNESS_METALLIC
 			#pragma shader_feature _NORMAL_MAP
 			#pragma shader_feature _PARALLAX_MAP
 			#pragma shader_feature _DETAIL_MASK
 			#pragma shader_feature _DETAIL_ALBEDO_MAP
 			#pragma shader_feature _DETAIL_NORMAL_MAP
+
+			//Filament Extended
+			#pragma shader_feature _ ROUGHNESS_MAP _ROUGHNESS_ALBEDO _ROUGHNESS_METALLIC
+			#pragma shader_feature REFLECTANCE
+			//Anisotropic
+			#pragma shader_feature ANISOTROPY
+
+			//ClearCoat
+			#pragma shader_feature CLEAR_COAT
+			#pragma shader_feature CLEARCOAT_MAP
+			#pragma shader_feature CLEAR_COAT_ROUGHNESS
+			#pragma shader_feature CLEAR_COAT_NORMAL
+			
+			//Sheen 
+			#pragma shader_feature SHEEN_COLOR
+			
+			//SpecularAntiAliasing
+			#pragma shader_feature GEOMETRIC_SPECULAR_AA
 
 			#pragma multi_compile _ LOD_FADE_CROSSFADE
 
@@ -202,7 +220,6 @@
 
 			#pragma shader_feature _ _RENDERING_CUTOUT
 			#pragma shader_feature _METALLIC_MAP
-			#pragma shader_feature _ ROUGHNESS_MAP _ROUGHNESS_ALBEDO _ROUGHNESS_METALLIC
 			#pragma shader_feature _NORMAL_MAP
 			#pragma shader_feature _PARALLAX_MAP
 			#pragma shader_feature _OCCLUSION_MAP
@@ -210,6 +227,24 @@
 			#pragma shader_feature _DETAIL_MASK
 			#pragma shader_feature _DETAIL_ALBEDO_MAP
 			#pragma shader_feature _DETAIL_NORMAL_MAP
+
+			//Filament Extended
+			#pragma shader_feature _ ROUGHNESS_MAP _ROUGHNESS_ALBEDO _ROUGHNESS_METALLIC
+			#pragma shader_feature REFLECTANCE
+			//Anisotropic
+			#pragma shader_feature ANISOTROPY
+
+			//ClearCoat
+			#pragma shader_feature CLEAR_COAT
+			#pragma shader_feature CLEARCOAT_MAP
+			#pragma shader_feature CLEAR_COAT_ROUGHNESS
+			#pragma shader_feature CLEAR_COAT_NORMAL
+			
+			//Sheen 
+			#pragma shader_feature SHEEN_COLOR
+			
+			//SpecularAntiAliasing
+			#pragma shader_feature GEOMETRIC_SPECULAR_AA
 
 			#pragma multi_compile _ LOD_FADE_CROSSFADE
 

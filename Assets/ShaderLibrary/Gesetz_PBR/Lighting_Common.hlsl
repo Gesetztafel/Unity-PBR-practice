@@ -97,25 +97,25 @@ struct PixelParams
     float anisotropy;
 #endif
 	
-// #if defined(SHADING_MODE_SUBSURFACE)||defined(REFRACTION)
-//     float thickness;
-// #endif
-// #if defined(SHADING_MODEL_SUBSURFACE)
-//     float3  subsurfaceColor;
-//     float subsurfacePower;
-// #endif
+#if defined(SHADING_MODE_SUBSURFACE)||defined(REFRACTION)
+    float thickness;
+#endif
+#if defined(SHADING_MODEL_SUBSURFACE)
+    float3  subsurfaceColor;
+    float subsurfacePower;
+#endif
 
-// #if defined(SHADING_MODEL_CLOTH) && defined(SUBSURFACE_COLOR)
-//     float3  subsurfaceColor;
-// #endif
+#if defined(SHADING_MODEL_CLOTH) && defined(SUBSURFACE_COLOR)
+    float3  subsurfaceColor;
+#endif
 
-// #if defined(REFRACTION)
-//     float etaRI;
-//     float etaIR;
-//     float transmission;
-//     float uThickness;
-//     float3  absorption;
-// #endif
+#if defined(REFRACTION)
+    float etaRI;
+    float etaIR;
+    float transmission;
+    float uThickness;
+    float3  absorption;
+#endif
 };
 
 // [Chan 18] "Material Advances in Call of Duty: WWII"

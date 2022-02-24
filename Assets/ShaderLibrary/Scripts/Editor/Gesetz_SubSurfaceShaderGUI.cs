@@ -75,7 +75,12 @@ public class Gesetz_SubSurfaceShaderGUI : ShaderGUI
 
         DoMain();
         DoSecondary();
+
+        DoSubSurface();
+
         DoAdvanced();
+
+        DoLUT();
     }
 
     void DoRenderingMode()
@@ -207,69 +212,6 @@ public class Gesetz_SubSurfaceShaderGUI : ShaderGUI
         {
             SetKeyword("_METALLIC_MAP", map.textureValue);
         }
-    }
-
-    void DoRoughnessMap()
-    {
-        MaterialProperty map = FindProperty("_RoughnessMap");
-        Texture tex = map.textureValue;
-        EditorGUI.BeginChangeCheck();
-        editor.TexturePropertySingleLine(
-            MakeLabel(map, "Roughness (R)"), map
-        );
-    }
-
-    void DoRoughness()
-    {
-        RoughnessSource source = RoughnessSource.Uniform;
-
-        if (IsKeywordEnabled("ROUGHNESS_MAP"))
-        {
-            source = RoughnessSource.RoughnessMap;
-        }
-        else if (IsKeywordEnabled("_ROUGHNESS_ALBEDO"))
-        {
-            source = RoughnessSource.Albedo;
-        }
-        else if (IsKeywordEnabled("_ROUGHNESS_METALLIC"))
-        {
-            source = RoughnessSource.Metallic;
-        }
-
-        MaterialProperty slider = FindProperty("_Roughness");
-        EditorGUI.indentLevel += 2;
-        editor.ShaderProperty(slider, MakeLabel(slider));
-        EditorGUI.indentLevel += 1;
-
-        EditorGUI.BeginChangeCheck();
-        source = (RoughnessSource)EditorGUILayout.EnumPopup(
-            MakeLabel("Source"), source
-        );
-        if (EditorGUI.EndChangeCheck())
-        {
-            RecordAction("Roughness Source");
-            SetKeyword("ROUGHNESS_MAP", source == RoughnessSource.RoughnessMap);
-            SetKeyword("_ROUGHNESS_ALBEDO", source == RoughnessSource.Albedo);
-            SetKeyword(
-                "_ROUGHNESS_METALLIC", source == RoughnessSource.Metallic
-            );
-        }
-        EditorGUI.indentLevel -= 3;
-    }
-
-    void DoReflectance()
-    {
-        MaterialProperty slider = FindProperty("_Reflectance");
-        EditorGUI.indentLevel += 2;
-        editor.ShaderProperty(slider, MakeLabel(slider));
-        EditorGUI.indentLevel += 1;
-        EditorGUI.BeginChangeCheck();
-
-        if (EditorGUI.EndChangeCheck())
-        {
-            SetKeyword("_SMOOTHNESS_ALBEDO", true);
-        }
-        EditorGUI.indentLevel -= 3;
     }
 
     void DoParallax()
@@ -428,4 +370,91 @@ public class Gesetz_SubSurfaceShaderGUI : ShaderGUI
     {
         editor.RegisterPropertyChangeUndo(label);
     }
+
+    void DoRoughnessMap()
+    {
+        MaterialProperty map = FindProperty("_RoughnessMap");
+        Texture tex = map.textureValue;
+        EditorGUI.BeginChangeCheck();
+        editor.TexturePropertySingleLine(
+            MakeLabel(map, "Roughness"), map,
+            tex ? null : FindProperty("_Roughness")
+        );
+
+        if (EditorGUI.EndChangeCheck() && tex != map.textureValue)
+        {
+            SetKeyword("ROUGHNESS_MAP", map.textureValue);
+        }
+    }
+
+    void DoRoughness()
+    {
+        RoughnessSource source = RoughnessSource.Uniform;
+
+        if (IsKeywordEnabled("ROUGHNESS_MAP"))
+        {
+            source = RoughnessSource.RoughnessMap;
+        }
+        else if (IsKeywordEnabled("_ROUGHNESS_ALBEDO"))
+        {
+            source = RoughnessSource.Albedo;
+        }
+        else if (IsKeywordEnabled("_ROUGHNESS_METALLIC"))
+        {
+            source = RoughnessSource.Metallic;
+        }
+
+        EditorGUI.BeginChangeCheck();
+        source = (RoughnessSource)EditorGUILayout.EnumPopup(
+            MakeLabel("Source"), source
+        );
+        if (EditorGUI.EndChangeCheck())
+        {
+            RecordAction("Roughness Source");
+            SetKeyword("ROUGHNESS_MAP", source == RoughnessSource.RoughnessMap);
+            SetKeyword("_ROUGHNESS_ALBEDO", source == RoughnessSource.Albedo);
+            SetKeyword(
+                "_ROUGHNESS_METALLIC", source == RoughnessSource.Metallic
+            );
+        }
+    }
+    void DoReflectance()
+    {
+        MaterialProperty slider = FindProperty("_Reflectance");
+        EditorGUI.indentLevel += 2;
+        editor.ShaderProperty(slider, MakeLabel(slider));
+        EditorGUI.indentLevel += 1;
+        EditorGUI.indentLevel -= 3;
+    }
+
+    void DoLUT()
+    {
+        MaterialProperty map = FindProperty("_DFG");
+        Texture tex = map.textureValue;
+        EditorGUI.BeginChangeCheck();
+        editor.TexturePropertySingleLine(
+            MakeLabel(map, "DFG LUT"), map
+        );
+    }
+
+    void DoSubSurface()
+    {
+        GUILayout.Label("SubSurface", EditorStyles.boldLabel);
+
+        MaterialProperty slider1 = FindProperty("_SubSurfacePower");
+        EditorGUI.indentLevel += 2;
+        editor.ShaderProperty(slider1, MakeLabel(slider1));
+        EditorGUI.indentLevel += 1;
+        EditorGUI.indentLevel -= 3;
+
+        MaterialProperty sheenColor = FindProperty("_SubSurfaceColor");
+        editor.ShaderProperty(sheenColor, MakeLabel(sheenColor));
+
+        MaterialProperty slider2 = FindProperty("_Thickness");
+        EditorGUI.indentLevel += 2;
+        editor.ShaderProperty(slider2, MakeLabel(slider2));
+        EditorGUI.indentLevel += 1;
+        EditorGUI.indentLevel -= 3;
+    }
+
 }
