@@ -1,14 +1,10 @@
----
-typora-root-url: Assets\ShaderLibrary\Gesetz_PBR\Docs\images
----
-
 # Unity-PBR-practice
 
 ## 结果展示
 
 ### Shandard Model
 
-![Standard](/Standard.JPG)
+![Standard](https://github.com/Gesetztafel/Unity-PBR-practice/tree/main/Assets/ShaderLibrary/Gesetz_PBR/Docs/images/Standard.JPG)
 
 Dielectrics-Reflectance 1.0-0.0 Metallic 0.0 Roughness 0.0
 
@@ -20,7 +16,7 @@ Metallic 1.0-0.0
 
 #### Clear Coat
 
-![ClearCoat](/ClearCoat.JPG)
+![ClearCoat](https://github.com/Gesetztafel/Unity-PBR-practice/tree/main/Assets/ShaderLibrary/Gesetz_PBR/Docs/images/ClearCoat.JPG)
 
 CleatCoatRoughness 1.0-0.0
 
@@ -28,37 +24,37 @@ ClearCoat 1.0-0.0
 
 #### Anisotropy
 
-![Anisotropy](/Anisotropy.JPG)
+![Anisotropy](https://github.com/Gesetztafel/Unity-PBR-practice/tree/main/Assets/ShaderLibrary/Gesetz_PBR/Docs/images/Anisotropy.JPG)
 
 Anisotropy 1.0-0.0
 
-![Anisotropy -1.0 1.0](/Anisotropy -1.0 1.0.JPG)
+![Anisotropy -1.0 1.0](https://github.com/Gesetztafel/Unity-PBR-practice/tree/main/Assets/ShaderLibrary/Gesetz_PBR/Docs/images/Anisotropy -1.0 1.0.JPG)
 
 Anisotropy 1.0, -1.0
 
 #### Sheen
 
-![Sheen](/Sheen.JPG)
+![Sheen](https://github.com/Gesetztafel/Unity-PBR-practice/tree/main/Assets/ShaderLibrary/Gesetz_PBR/Docs/images/Sheen.JPG)
 
 #### PBR 模型展示
 
 注：为了与Unity Standard 匹配，模型展示部分，光照模型 *PI；
 
-![Cerberus_LP Gesetz](/Cerberus_LP Gesetz.JPG)
+![Cerberus_LP Gesetz](https://github.com/Gesetztafel/Unity-PBR-practice/tree/main/Assets/ShaderLibrary/Gesetz_PBR/Docs/images/Cerberus_LP Gesetz.JPG)
 
-![monkey(left-Gesetz right-Standard)](/monkey(left-Gesetz right-Standard).JPG)
+![monkey(left-Gesetz right-Standard)](https://github.com/Gesetztafel/Unity-PBR-practice/tree/main/Assets/ShaderLibrary/Gesetz_PBR/Docs/images/monkey(left-Gesetz right-Standard).JPG)
 
 monkey left-Gesetz right-Standard
 
-![](/monkey-back(left-Standard right-Gesetz).JPG)
+![](/monkey-back(https://github.com/Gesetztafel/Unity-PBR-practice/tree/main/Assets/ShaderLibrary/Gesetz_PBR/Docs/imagesleft-Standard right-Gesetz).JPG)
 
 monkey-back(left-Standard right-Gesetz)
 
-![](/Rustediron-Ball.JPG)
+![](https://github.com/Gesetztafel/Unity-PBR-practice/tree/main/Assets/ShaderLibrary/Gesetz_PBR/Docs/images/Rustediron-Ball.JPG)
 
 ### Cloth Model
 
-![](Cloth left - Cloth right - Standard.JPG)
+![](https://github.com/Gesetztafel/Unity-PBR-practice/tree/main/Assets/ShaderLibrary/Gesetz_PBR/Docs/images/Cloth left - Cloth right - Standard.JPG)
 
 ### SubSurface Model
 
