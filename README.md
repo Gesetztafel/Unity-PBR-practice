@@ -4,7 +4,7 @@
 
 ### Shandard Model
 
-![Standard](https://github.com/Gesetztafel/Unity-PBR-practice/tree/main/Assets/ShaderLibrary/Gesetz_PBR/Docs/images/Standard.JPG)
+![Standard](https://github.com/Gesetztafel/Unity-PBR-practice/blob/main/Assets/ShaderLibrary/Gesetz_PBR/Docs/images/Standard.JPG)
 
 Dielectrics-Reflectance 1.0-0.0 Metallic 0.0 Roughness 0.0
 
@@ -16,7 +16,7 @@ Metallic 1.0-0.0
 
 #### Clear Coat
 
-![ClearCoat](https://github.com/Gesetztafel/Unity-PBR-practice/tree/main/Assets/ShaderLibrary/Gesetz_PBR/Docs/images/ClearCoat.JPG)
+![ClearCoat](https://github.com/Gesetztafel/Unity-PBR-practice/blob/main/Assets/ShaderLibrary/Gesetz_PBR/Docs/images/ClearCoat.JPG)
 
 CleatCoatRoughness 1.0-0.0
 
@@ -24,7 +24,7 @@ ClearCoat 1.0-0.0
 
 #### Anisotropy
 
-![Anisotropy](https://github.com/Gesetztafel/Unity-PBR-practice/tree/main/Assets/ShaderLibrary/Gesetz_PBR/Docs/images/Anisotropy.JPG)
+![Anisotropy](https://github.com/Gesetztafel/Unity-PBR-practice/blob/main/Assets/ShaderLibrary/Gesetz_PBR/Docs/images/Anisotropy.JPG)
 
 Anisotropy 1.0-0.0
 
@@ -67,6 +67,10 @@ TODO
 [Romain Guy&Mathias Agopian] [Physically Based Rendering in Filament](https://google.github.io/filament/)
 
 中文翻译：[Jerkwin](https://jerkwin.github.io/filamentcn/Filament.md.html#%E6%9D%90%E8%B4%A8%E7%B3%BB%E7%BB%9F/%E9%80%8F%E6%98%8E%E6%B6%82%E5%B1%82%E6%A8%A1%E5%9E%8B)
+
+[Romain Guy 20]High Quality, High Performance Graphics In Filament , SIGGRAPH 2020, Moving Moblie Grphics
+
+
 
 
 

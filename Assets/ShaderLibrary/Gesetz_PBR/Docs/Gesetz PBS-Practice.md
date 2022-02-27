@@ -1,4 +1,4 @@
-## 标椎模型
+## 标准模型
 
 Disney Principled BRDF  
 
@@ -14,45 +14,57 @@ Specular D : GGX NDF +Specular G : Smith-GGX Height-Correlated Masking&Shadowing
 
 Specular F : Schlick Fresnel  
 
-
-
 ### Indirect Lighting
 
 IBL(Image Based Lighting)——Light probe(光照探头)，Reflection probe(反射探头，天空盒..)
 
-#### Indirect Diffuse:
+#### Indirect Diffuse: Irradiance map & SH（spherical harmonics） 辐照度贴图&球谐函数
+
+采用Unity Builtin Standard 实现 ；
+
+#### Indirect Specular :Pre-Filter Importance Sampling & Split Sum Approximation 预滤波重要性采样与拆分求和近似
 
 
 
-#### Indirect Specular : 
+- Pre-filtered environment map  (LD Term)
 
-- Pre-filtered environment map  
+环境立方体贴图卷积，粗糙度映射mipmap LOD，采用Unity Standard 6级Mipmap 非线性映射，混合天空盒反射和最近反射探头；
 
+- Environment BRDF  (DFG Term)
 
+i 2D LUT  TODO
 
-- Environment BRDF  
-
-i 2D LUT  
-
-TODO
-
-ii 解析拟合  (USE THIS)
+ii 解析拟合  (USE THIS) [Karis14]，[Lazarov13]
 
 ### 参数化
 
+对[Burley12] Disney Principled Material Model 进行简化，
+
+标准参数：BaseColor 基色，Metallic 金属度，Roughness 粗糙度，Reflectance 反射率, 自发光,环境光遮蔽，采用金属工作流
+
+### 标准模型拓展
+
+实现Clear Coat，Anisotropy，Sheen 及相应IBL实现；
+
+Shader GUI:../Scripts/Editor/Gesetz_StandardShaderGUI.cs
+
+## Cloth
+
+Diffuse: Lambertian + 简化 SubSurface散射；
+
+Specular:[Estevez17] "Charlie"光泽 + [Neubelt13] 可见性项
+
+添加Sheen特性
+
+### SubSurface 
+
+TODO
+
+技术细节可参详 Filament PBR文档及其中文翻译
 
 
-### Clear Coat
 
 
-
-### Anisotropy
-
-
-
-### Shader GUI
-
-../Scripts/Editor/
 
 
 
@@ -112,6 +124,8 @@ monkey-back(left-Standard right-Gesetz)
 
 ![](..\Docs\images\Cloth left - Cloth right - Standard.JPG)
 
+
+
 ### SubSurface Model
 
 TODO
@@ -138,7 +152,8 @@ TODO
 
 **IBL(Image Based Lighting):**
 
-- 添加平面反射，SSR(Screen Space Reflection);
+- 添加平面反射，SSR(Screen Space Reflection;
+- GTSO(Bent Normal,AO);
 
 
 
@@ -180,6 +195,8 @@ TODO
 ## References
 
 [Romain Guy&Mathias Agopian] [Physically Based Rendering in Filament](https://google.github.io/filament/) 中文翻译：[Jerkwin](https://jerkwin.github.io/filamentcn/Filament.md.html#%E6%9D%90%E8%B4%A8%E7%B3%BB%E7%BB%9F/%E9%80%8F%E6%98%8E%E6%B6%82%E5%B1%82%E6%A8%A1%E5%9E%8B)
+
+[Romain Guy 20]High Quality, High Performance Graphics In Filament , SIGGRAPH 2020, Moving Moblie Grphics
 
 
 

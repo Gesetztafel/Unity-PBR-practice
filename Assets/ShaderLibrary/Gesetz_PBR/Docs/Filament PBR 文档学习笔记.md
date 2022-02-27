@@ -1,8 +1,10 @@
-# Physically Based Rendering in Filament
+Physically Based Rendering in Filament
 
 # 2 概述
 
 ## 2.1 原理
+
+"迪斯尼基于物理的着色"(Physically-based shading at Disney)[[Burley12](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-burley12)]).
 
 
 
@@ -14,19 +16,11 @@
 
 
 
-
-
 ## 2.2 基于物理的渲染
 
-具有艺术性,生产效率高
+具有艺术性,生产效率高；
 
-基于物理的渲染,更准确地表现材质及其与光的相互作用
-
-
-
-将材质和光照分离
-
-可以更轻松地创建在所有光照条件下看起来都很精确的真实资源
+基于物理的渲染,更准确地表现材质及其与光的相互作用；PBR方法的核心是将材质和光照分离，可以更轻松地创建在所有光照条件下看起来都很精确的真实资源
 
 # 3 符号注记
 
@@ -55,9 +49,7 @@
 
 # 4 材质系统
 
-多种材质模型, 用以简化对各种表面特征的描述
-
-将标准模型, 透明涂层模型和各向异性模型结合起来, 形成一个更灵活更强大的模型
+多种材质模型, 用以简化对各种表面特征的描述；将标准模型, 透明涂层模型和各向异性模型结合起来, 形成一个更灵活更强大的模型
 
 
 
@@ -306,7 +298,7 @@ float V_SmithGGXCorrelated(float NoV, float NoL, float roughness) {
 
 近似优化
 
-$V(v,l,\alpha) = \frac{0.5}{\NoL [n\cdot v (1 - \alpha) + \alpha] + n\cdot v [\NoL (1 - \alpha) + \alpha]}$(16)
+$V(v,l,\alpha) = \frac{0.5}{ n\cdot l [n\cdot v (1 - \alpha) + \alpha] + n\cdot v [ n\cdot l (1 - \alpha) + \alpha]}$(16)
 
 ```
 float V_SmithGGXCorrelatedFast(float NoV, float NoL, float roughness) {
@@ -321,7 +313,7 @@ float V_SmithGGXCorrelatedFast(float NoV, float NoL, float roughness) {
 
 [[Hammon17](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-hammon17)]
 
-$V(v,l,\alpha) = \frac{0.5}{\text{lerp}(2 (\NoL) (n\cdot v), \NoL + n\cdot v, \alpha)}$(17)
+$V(v,l,\alpha) = \frac{0.5}{\text{lerp}(2 ( n\cdot l) (n\cdot v),  n\cdot l + n\cdot v, \alpha)}$(17)
 
 ### 4.4.3 Fresnel(镜面F)
 
@@ -366,7 +358,7 @@ vec3 F_Schlick(float VoH, vec3 f0) {
 
 在漫反射项中, fm为Lambertian函数, BRDF的漫反射项变为:
 
-$f_d(v,l) = \frac{\sigma}{\pi} \frac{1}{| n\cdot v | | \NoL |}\int_\Omega D(m,\alpha) G(v,l,m) (v \cdot m) (l \cdot m) dm$(19)
+$f_d(v,l) = \frac{\sigma}{\pi} \frac{1}{| n\cdot v | |  n\cdot l |}\int_\Omega D(m,\alpha) G(v,l,m) (v \cdot m) (l \cdot m) dm$(19)
 
 假定微面片半球具有均匀的漫反射:
 
@@ -858,7 +850,7 @@ $f_{0_{base}} = \frac{\left( 1 - 5 \sqrt{f_0} \right) ^2}{\left( 5 - \sqrt{f_0} 
 
 对先前的各向同性镜面BRDF进行修改以处理各向异性材质. Burley使用各向异性GGX NDF实现了这一目标:
 
-$D_{aniso}(h,\alpha) = \frac{1}{\pi \alpha_t \alpha_b} \frac{1}{[(\frac{t \cdot h}{\alpha_t})^2 + (\frac{b \cdot h}{\alpha_b})^2 + (\NoH)^2]^2}$
+$D_{aniso}(h,\alpha) = \frac{1}{\pi \alpha_t \alpha_b} \frac{1}{[(\frac{t \cdot h}{\alpha_t})^2 + (\frac{b \cdot h}{\alpha_b})^2 + ( n\cdot h)^2]^2}$
 
 依赖于两个辅助粗糙度项: 沿副切线方向的粗糙度 αb, 以及沿切线方向的粗糙度 αt.
 
@@ -892,13 +884,13 @@ float D_GGX_Anisotropic(float NoH, const vec3 h,
 
 此外, [[Heitz14](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-heitz14)]提出了一个各向异性遮蔽-阴影函数, 用于匹配高度相关的GGX分布. 通过使用可见度函数, 可以大大地简化遮蔽-阴影项:
 
-$G(v,l,h,\alpha) = \frac{\chi^+(\VoH) \chi^+(\LoH)}{1 + \Lambda(v) + \Lambda(l)}$
+$G(v,l,h,\alpha) = \frac{\chi^+( v\cdot h) \chi^+( l\cdot h)}{1 + \Lambda(v) + \Lambda(l)}$
 
 $\Lambda(m) = \frac{-1 + \sqrt{1 + \alpha_0^2 \tan^2\theta_m}}{2} = \frac{-1 + \sqrt{1 + \alpha_0^2 \frac{1 - \cos^2 \theta_m}{\cos^2 \theta_m}}}{2}$
 
 其中 $\alpha_0 = \sqrt{\cos^2 \phi_0 \alpha_x^2 + \sin^2 \phi_0 \alpha_y^2}$
 
-推导后:$V_{aniso}(\NoL,\NoV,\alpha) = \frac{1}{2[(\NoL)\hat{\Lambda}_v+(\NoV)\hat{\Lambda}_l]} \\\hat{\Lambda}_v = \sqrt{\alpha^2_t(t \cdot v)^2+\alpha^2_b(b \cdot v)^2+(\NoV)^2} \\\hat{\Lambda}_l = \sqrt{\alpha^2_t(t \cdot l)^2+\alpha^2_b(b \cdot l)^2+(\NoL)^2}$
+推导后:$V_{aniso}( n\cdot l, n\cdot v,\alpha) = \frac{1}{2[( n\cdot l)\hat{\Lambda}_v+( n\cdot v)\hat{\Lambda}_l]} \\\hat{\Lambda}_v = \sqrt{\alpha^2_t(t \cdot v)^2+\alpha^2_b(b \cdot v)^2+( n\cdot v)^2} \\\hat{\Lambda}_l = \sqrt{\alpha^2_t(t \cdot l)^2+\alpha^2_b(b \cdot l)^2+( n\cdot l)^2}$
 
 每条光线的 Λ^v 项都相同, 如果需要只计算一次即可.
 
@@ -959,13 +951,124 @@ TODO
 
 #### 4.12.1 布料镜面BRDF
 
+布料镜面BRDF  改进,微面片BRDF,来自Ashikhmin&Premoze在[[Ashikhmin07](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-ashikhmin07)]中的描述:
+
+分布项对BRDF的贡献最大, 并且阴影/遮蔽项对于他们的天鹅绒分布来说并不是必需的. 分布项本身就是一个反向高斯分布. 
+
+有助于实现模糊光照(前向散射和后向散射), 同时添加了偏移以模拟前向镜面反射的贡献.
+
+天鹅绒NDF:$$D_{velvet}(v,h,α)=c_{norm}[1+4exp(\frac{−cot^2θ_h}{α^2})]$$
+
+[[Ashikhmin00](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-ashikhmin00)]中描述的NDF的变体,并进行了特别的修改以包含偏移(此处设置为1)和幅度(4)
+
+[[Neubelt13](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-neubelt13)],Neubelt&Pettineo,NDF的归一化版本:
+
+$$D_{velvet}(v,h,α)=\frac{1}{\pi(1+4α^2)}[1+4(\frac{exp(\frac{−cot^2θ_h}{α^2})}{sin^4θ_h})]$$
+
+对于完整的镜面BRDF, 遵循[[Neubelt13](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-neubelt13)],并用更平滑的变体替代了传统的分母:
+
+$$f_r(v,h,α)=\frac{D_{velvet}(v,h,α)}{4[n⋅l+n⋅v−(n⋅l)(n⋅v)]}$$
+
+天鹅绒NDF ,半浮点优化,并使用三角恒等式避免计算昂贵的余切.
+
+```
+float D_Ashikhmin(float roughness, float NoH) {
+    // Ashikhmin 2007, "Distribution-based BRDFs"
+	float a2 = roughness * roughness;
+	float cos2h = NoH * NoH;
+	float sin2h = max(1.0 - cos2h, 0.0078125); // 2^(-14/2), so sin2h^2 > 0 in fp16
+	float sin4h = sin2h * sin2h;
+	float cot2 = -cos2h / (a2 * sin2h);
+	return 1.0 / (PI * (4.0 * a2 + 1.0) * sin4h) * (4.0 * exp(cot2) + sin4h);
+}
+```
+
+[[Estevez17](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-estevez17)],Estevez&Kulla提出NDF,"Charlie"光泽,于指数正弦而不是反向高斯.  它的参数化感觉更自然, 更直观, 它提供了更柔和的外观, 并且它的实现更简单
+
+$$D(m)=\frac{(2+1/α)sinθ^{1/α}}{2\pi}$$
+
+[[Estevez17](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-estevez17)],提出了一个新的阴影项, 在这里省略, 因为计算成本很高.相反, 使用[[Neubelt13](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-neubelt13)]中的可见度项
+
+```
+float D_Charlie(float roughness, float NoH) {
+    // Estevez and Kulla 2017, "Production Friendly Microfacet Sheen BRDF"
+    float invAlpha  = 1.0 / roughness;
+    float cos2h = NoH * NoH;
+    float sin2h = max(1.0 - cos2h, 0.0078125); // 2^(-14/2), so sin2h^2 > 0 in fp16
+    return (2.0 + invAlpha) * pow(sin2h, invAlpha * 0.5) / (2.0 * PI);
+}
+```
+
+
+
 ##### 4.12.1.1  光泽颜色
+
+为了更好地控制布料的外观, 并使用户能够重新创建双色调镜面反射材质, 我们引入了直接修改镜面反射率的功能. 
+
+光泽颜色"(sheen color)
 
 #### 4.12.2  布料漫反射BRDF
 
+修改Lambertian漫反射BRDF. 以满足能量守恒, 并提供了可选的次表面散射项. 并不是基于物理的, 可用于模拟特定类型织物中光的散射, 部分吸收和再发射.
+
+不含可选次表面散射的漫反射项:
+
+$$f_d(v,h)=\frac{c_{diff}}{π}(1−F(v,h))$$
+
+F(v,h)F(v,h) 为方程 48 中布料镜面反射BRDF的Fresnel项
+
+在实践中, 我们选择省略漫反射分量中的 1−F(v,h) 项. 
+
+效果有点微妙, 我们认为这不值得增加计算成本.
+
+
+
+次表面散射是使用包裹漫反射光照技术实现的, 其能量守恒形式为:
+
+$$f_d(v,h)=\frac{c_{diff}}{π}(1−F(v,h))⟨n⋅l+\frac{w}{(1+w)}⟩⟨c_{subsurface}+n⋅l⟩$$(51)
+
+w 为介于0和1之间的值, 定义了漫反射光围绕终结器的程度.为避免引入另一个参数, 固定 w=0.5.
+
+请注意, 使用包裹漫反射光照时, 漫反射项不能乘以 n⋅l. 
+
+```
+// 镜面BRDF
+float D = distributionCloth(roughness, NoH);
+float V = visibilityCloth(NoV, NoL);
+vec3  F = sheenColor;
+vec3 Fr = (D * V) * F;
+
+// 漫反射BRDF
+float diffuse = diffuse(roughness, NoV, NoL, LoH);
+#if defined(MATERIAL_HAS_SUBSURFACE_COLOR)
+// energy conservative wrap diffuse
+diffuse *= saturate((dot(n, light.l) + 0.5) / 2.25);
+#endif
+vec3 Fd = diffuse * pixel.diffuseColor;
+
+#if defined(MATERIAL_HAS_SUBSURFACE_COLOR)
+// 便宜的次表面散射
+Fd *= saturate(subsurfaceColor + NoL);
+vec3 color = Fd + Fr * NoL;
+color *= (lightIntensity * lightAttenuation) * lightColor;
+#else
+vec3 color = Fd + Fr;
+color *= (lightIntensity * lightAttenuation * NoL) * lightColor;
+#endif
+```
+
 #### 4.12.3 布料参数化
 
+除 *金属度* 和 *反射率* 参数外, 布料材质模型包含了先前为标准材质模型定义的所有参数.
 
+|                           参数 | 定义                                                         |
+| -----------------------------: | :----------------------------------------------------------- |
+|        **SheenColor 光泽颜色** | 用于创建双色调镜面反射织物的高光色调(默认值为0.04以匹配标准反射率) |
+| **SubsurfaceColor 次表面颜色** | 经材料散射和吸收后的漫反射颜色                               |
+
+要创建类似天鹅绒的材质, 可以将基色设置为黑色(或深色). 并将光泽颜色设置为所需的色度信息.
+
+创建更常见的面料, 如牛仔布, 棉布等, 请使用基色作为色度, 并使用默认的光泽颜色或将光泽颜色设置为基色的亮度
 
 ## 5 光照
 
@@ -979,29 +1082,107 @@ TODO
 
 
 
-### 5.1 
+### 5.1 单位
+
+|                                  光度学术语 | 符号 | 单位                              |
+| ------------------------------------------: | :--: | :-------------------------------- |
+|              光通量/发光功率 Luminous power |  Φ   | Lumen (lm) 流明                   |
+|            光度/发光强度 Luminous intensity |  I   | Candela (cd) 或 lm/sr 坎德拉/烛光 |
+|                            照度 Illuminance |  E   | Lux (lx) 或 lm/m2 勒克斯          |
+|                         亮度/辉度 Luminance |  L   | Nit (nt) 或 cd/m2 尼特            |
+|                      辐射功率 Radiant power |  Φe  | Watt (W) 瓦特                     |
+|             光效/发光效率 Luminous efficacy |  η   | Lumens per watt (lm/W) 流明每瓦特 |
+| 发光比率/光源能量利用率 Luminous efficiency |  V   | 百分比 (%)                        |
+
+TODO
+
+...
+
+|                                灯光类型 | 单位                           |
+| --------------------------------------: | :----------------------------- |
+|                平行光 Directional light | 照度 Illuminance (lx 或 lm/m2) |
+|                      点光源 Point light | 发光功率 Luminous power (lm)   |
+|                       聚光灯 Spot light | 发光功率 Luminous power (lm)   |
+|            光度测量灯 Photometric light | 光度 Luminous intensity (cd)   |
+| 遮蔽光度测量灯 Masked photometric light | 发光功率 Luminous power (lm)   |
+|                       面光源 Area light | 发光功率 Luminous power (lm)   |
+|        基于图像的灯光 Image based light | 亮度 Luminance (cd/m2)         |
+
+...
+
+#### 5.1.1 灯光单位验证
+
+##### 5.1.1.1 照度
+
+##### 5.1.1.2 亮度
+
+##### 5.1.1.3 发光强度
 
 
 
-### 5.2 
+$I=E⋅d^2$
 
+### 5.2 直接光照
+
+...
+
+#### 5.2.1 平行光
+
+#### 5.2.2 精准光源
+
+##### 5.2.2.1 点光源
+
+##### 5.2.2.2 聚光灯
+
+##### 5.2.2.3 衰减函数
+
+#### 5.2.3 光度学光源
+
+#### 5.2.4 面光源
+
+LTCs
+
+#### 5.2.5 光源参数化
+
+与标准材质模型的参数化类似, 目标是让光源参数化直观且易于美工和开发人员使用. 
+
+着这种精神, 我们决定将光源颜色(或色调)与光源强度分开.
+
+因此, 光源颜色定义为线性RGB颜色(或者为了方便, 在工具UI中使用sRGB).
+
+
+
+|                               参数 | 定义                                                         |
+| ---------------------------------: | :----------------------------------------------------------- |
+|                      **类型 Type** | Directional平行光, point点光源, spot聚光灯, area面光源       |
+|                 **方向 Direction** | 用于平行光, 点光源, 光度学点光源, 线状和管状面光源(方向性)   |
+|                     **颜色 Color** | 发射光的颜色, 线性RGB颜色. 在工具中可以使用sRGB颜色或色温指定 |
+|                 **强度 Intensity** | 灯光的亮度. 单位取决于光源类型                               |
+|        **Falloff radius 衰减半径** | 最大影响距离                                                 |
+|             **Inner angle 内锥角** | 聚光灯内圆锥体的角度, 以度为单位                             |
+|             **Outer angle 外锥角** | 聚光灯外圆锥体的角度, 以度为单位                             |
+|                    **Length 长度** | 面光源的长度, 用于创建线性或管状灯光                         |
+|                    **Radius 半径** | 面光源的半径, 用于创建球形或管状灯光                         |
+| **Photometric profile 光度学轮廓** | 表示光度学光源轮廓的纹理, 只能用于精准光源                   |
+|        **Masked profile 遮蔽轮廓** | 布尔值, 指示是否将IES轮廓用作遮蔽. 作为遮蔽时, 光源的亮度会乘以一个因子, 这个因子为用户指定的强度与积分IES轮廓强度之比. 如果不用作遮蔽, 会忽略用户指定的强度, 但使用IES乘数代替 |
+|                       **光度乘数** | 光度学光源的亮度乘数(如果禁用IES遮蔽)                        |
+
+**注意**: 为了简化实现, 在发送到着色器之前, 所有发光功率都会转换为发光强度(cdcd). 转换依赖于光源, 前面几节对此有所说明.
+
+**注意**: 可以从其他参数推断光源类型(例如, 点光源的长度, 半径, 内角和外角都为0).
+
+##### 5.2.5.1 色温
+
+#### 5.2.6 预曝光灯光
 
 
 ### 5.3 基于图像的光照(IBL)
 
-在现实生活中, 光来自各个方向, 或是直接来自光源, 或是间接来自环境中物体的反弹, 并在这个过程中被部分吸收. 
-
-在某种程度上, 可以将物体周围的整个环境视为光源. 
-
-图像, 特别是立方体贴图, 是编码这种"环境光"的好方法. 这称为基于图像的光照(IBL), 或有时称为间接光照.
+在现实生活中, 光来自各个方向, 或是直接来自光源, 或是间接来自环境中物体的反弹, 并在这个过程中被部分吸收. 在某种程度上, 可以将物体周围的整个环境视为光源. 图像, 特别是立方体贴图, 是编码这种"环境光"的好方法. 这称为基于图像的光照(IBL), 或有时称为间接光照.
 
 
 
-基于图像的光照存在局限性. 
-
-显然, 必须以某种方式获取环境图像, 正如我们将在下面看到的那样, 在将其用于光照之前, 需要进行预处理. 
-
-通常, 环境图像是在现实世界中离线获取的, 或者由引擎离线或实时生成; 无论哪种方式, 都需要使用局部或远程探头.
+基于图像的光照存在局限性. 显然, 必须以某种方式获取环境图像, 正如我们将在下面看到的那样, 在将其用于光照之前, 需要进行预处理. 通常, 环境图像是在现实世界中离线获取的, 或者由引擎离线或实时生成; 无论哪种方式, 都需要使用局部或远程探头.
 
 
 
@@ -1009,57 +1190,49 @@ TODO
 
 
 
-整个环境都会为物体表面上的特定点提供光; 这称为*辐照度* (EE). 
-
-从物体反弹出的光称为辐射(LoutLout). 
-
-入射光照必须一致性地用于BRDF的漫反射和镜面反射部分.
+整个环境都会为物体表面上的特定点提供光; 这称为*辐照度* (E). 从物体反弹出的光称为辐射(Lout). 入射光照必须一致性地用于BRDF的漫反射和镜面反射部分.
 
 
 
 基于图像的光照(IBL)的辐照度和材质模型(BRDF) f(Θ)f(Θ)[5](https://jerkwin.github.io/filamentcn/Filament.md.html#endnote-ibl1)之间的相互作用所产生的辐射 LoutLout 的计算方法如下:
 
-Lout(n,v,Θ)=∫Ωf(l,v,Θ)L⊥(l)⟨n⋅l⟩dl(76)
+$L_{out}(n,v,Θ)=∫_Ωf(l,v,Θ)L_⊥(l)⟨n⋅l⟩dl$(76)
 
 
 
 ### 5.3.1 IBL类型
 
-- 远程光探头
+- 远程光探头, 用于捕捉"无限远"处的光照信息, 可以忽略视差. 远程探头通常包括天空, 远处的景观特征或建筑物等. 它们可以由渲染引擎捕捉, 也可以高动态范围图像(HDRI)的形式从相机获得.
 
-  , 用于捕捉"无限远"处的光照信息, 可以忽略视差. 远程探头通常包括天空, 远处的景观特征或建筑物等. 它们可以由渲染引擎捕捉, 也可以高动态范围图像(HDRI)的形式从相机获得.
+- 局部光探头, 用于从特定角度捕捉世界的某个区域. 捕捉会投影到立方体或球体上, 具体取决于周围的几何体. 局部探头比远程探头更精确, 在为材质添加局部反射时特别有用.
 
-  
-
-- 局部光探头
-
-  , 用于从特定角度捕捉世界的某个区域. 捕捉会投影到立方体或球体上, 具体取决于周围的几何体. 局部探头比远程探头更精确, 在为材质添加局部反射时特别有用.
-
-  
-
-- 平面反射
-
-  , 用于通过渲染镜像场景来捕捉反射. 此技术只适用于平面, 如建筑地板, 道路和水.
-
-  
+- 平面反射, 用于通过渲染镜像场景来捕捉反射. 此技术只适用于平面, 如建筑地板, 道路和水.
 
 - **屏幕空间反射**, 基于在深度缓冲区使用光线行进方法渲染的场景(例如使用前一帧)来捕捉反射. SSR效果很好, 但可能非常昂贵.
 
-
-
-必须区分静态和动态IBL. 
-
-实现完全动态的昼夜循环需要动态地重新计算远程光探头[6](https://jerkwin.github.io/filamentcn/Filament.md.html#endnote-ibltypes1). 平面和屏幕空间反射本质都是动态的.
+必须区分静态和动态IBL. 实现完全动态的昼夜循环需要动态地重新计算远程光探头[6](https://jerkwin.github.io/filamentcn/Filament.md.html#endnote-ibltypes1). 平面和屏幕空间反射本质都是动态的.
 
 
 
 ### 5.3.2 IBL单位
 
+IBL将使用亮度单位 cd/m2,是所有直接光照方程的输出单位.对于引擎捕获的光探头(动态或静态离线)使用亮度单位非常简单.
 
+
+
+为正确地重建HDRI的亮度用于IBL, 美工必须做的不只是简单地拍摄环境照片, 还要记录额外的信息:
+
+- 颜色校准: 使用灰度卡或MacBeth ColorChecker
+- 相机设置: 光圈, 快门和ISO
+- **亮度样本**: 使用光点/亮度计
+
+测量并列出常用亮度值(晴空, 内部等)
 
 ### 5.3.3 处理光探头
 
+IBL的辐射度是通过在表面半球上进行积分来计算的. 
 
+必须首先对光探头进行预处理, 将它们转换为更适合实时交互的格式.
 
 - 镜面反射率: 预滤波重要性采样与拆分求和近似
 - **漫反射率**: 辐照度贴图和球谐函数
@@ -1068,74 +1241,835 @@ Lout(n,v,Θ)=∫Ωf(l,v,Θ)L⊥(l)⟨n⋅l⟩dl(76)
 
 #### 5.3.4.1 漫反射BRDF积分
 
+Lambertian BRDF
+
+$$f_d(σ)=\frac{σ}{π}\\L_d(n,σ)=∫_Ωf_d(σ)L_⊥(l)⟨n⋅l⟩dl\\=\frac{σ}{π} ∫_ΩL_⊥(l)⟨n⋅l⟩dl\\=\frac{σ}{π}E_d(n)$$
+
+辐照度 $$E_d(n)=∫_ΩL_⊥(l)⟨n⋅l⟩dl$$
+
+在离散域中:$$E_d(n)≡\underset{∀i∈image}{∑}L_⊥(s_i)⟨n⋅s_i⟩Ω_s$$
+
+Ωs 为与样本 i 相关联的立体角
 
 
 
+辐照度积分 Ed 可以简单地, 尽管很慢9, 预先计算并存储到立方体贴图中, 以便在运行时可以高效访问. 通常, *image* 是一个立方体贴图或等距矩形图像.σ/π项独立于IBL, 在运行时添加以获得*辐照度*.
+
+
+
+5 Θ 代表材质模型 f 的参数, 即: *粗糙度*, 反照度等......
+
+6 这可以通过混合静态探头, 或通过随时间推移工作负载来完成
+
+7 Lambertian BRDF 不依赖于  l→,  v→ 或 θ, 因此$ L_d(n,v,θ)≡L_d(n,σ)$
+
+8 对于立方体贴图, Ωs 可以使用 $\frac{2π}{6⋅width⋅height}$近似
+
+9 $O(12n^2m^2)$, n 和 m 分别为环境尺寸和预计算的立方体贴图
+
+
+
+然而, 辐照度也可以通过分解为球谐函数(SH)进行实时计算, 所得结果非常接近精确值并且成本不高. 
+
+通常最好避免在移动设备上获取纹理, 并释放纹理单元. 即使将其存储到立方体贴图中, 使用SH分解预先计算积分, 然后再渲染也要快几个数量级.
+
+
+
+SH分解在概念上类似于傅里叶变换, 它以频域中的正交基表示信号. 
+
+- 编码⟨cosθ⟩只需要很少的系数
+- 对具有 *圆对称* 的内核进行卷积非常便宜, 并且结果为SH空间中的乘积
+
+在实践中, ⟨cosθ⟩只要4或9个系数(即: 2或3个波段),这意味着 L⊥ 同样不需要更多系数.
+
+在实践中, 我们使用 ⟨cosθ⟩ 对L⊥ 进行预卷积, 并使用基本缩放因子 Kml 预先缩放这些系数, 以便着色器中的重建代码尽可能简单:
+
+```
+vec3 irradianceSH(vec3 n) {
+    // uniform vec3 sphericalHarmonics[9]
+    // 我们只使用前两个波段以获得更好的性能
+    return
+          sphericalHarmonics[0]
+        + sphericalHarmonics[1] * (n.y)
+        + sphericalHarmonics[2] * (n.z)
+        + sphericalHarmonics[3] * (n.x)
+        + sphericalHarmonics[4] * (n.y * n.x)
+        + sphericalHarmonics[5] * (n.y * n.z)
+        + sphericalHarmonics[6] * (3.0 * n.z * n.z - 1.0)
+        + sphericalHarmonics[7] * (n.z * n.x)
+        + sphericalHarmonics[8] * (n.x * n.x - n.y * n.y);
+}
+```
+
+注意, 使用2个波段时, 上面的计算变为 4×4 矩阵与向量的乘法.
+
+另外, 由于使用 Kml 进行了预缩放, SH系数可视为颜色, 特别地`sphericalHarmonics[0]`直接就是平均辐照度.
 
 #### 5.3.4.2 高光BRDF积分
 
+ IBL的辐照度和BRDF之间的相互作用产生的辐射 Lout 为:
 
+$L_{out}(n,v,Θ)=∫_Ωf(l,v,Θ)L_⊥(l)⟨n⋅l⟩∂l$(77)
+
+f(l,v,Θ)⟨n⋅l⟩ 对 L⊥ 的卷积, 即, 使用BRDF作为核对环境进行 *过滤*. . 事实上, 粗糙度较高时, 镜面反射看起来更 *模糊*.
+
+将 ff表达式代入方程77, 得到:
+
+$L_{out}(n,v,Θ)=∫_ΩD(l,v,α)F(l,v,f_0,f_{90})V(l,v,α)⟨n⋅l⟩L_⊥(l)∂l$(78)
+
+##### 5.3.4.2.1 简化BRDF积分
+
+由于没有封闭形式的解或计算 Lout 积分的简单方法, 使用一个简化的方程: I^I^,假定 v=n, 即视线方向 v 始终等于表面法向 n. 
+
+假定使得卷积的所有效果都与视线无关, 比如更接近观察者的反射模糊会增加(也称为拉伸反射).
+
+
+
+简化也会对恒定环境产生严重影响, 因为它会影响结果的常数项的大小(即DC). 通过在简化积分中使用一个比例因子 K, 至少可以校正这一点, 可以确保如果选择的值合适, 得到的平均辐照度仍然正确
+
+- I 为原始积分, 即:$ I(g)=∫_Ωg(l)⟨n⋅l⟩∂l$
+- I^I^ 为简化积分, 其中 v=n
+- K 为比例因子, 确保平均辐照度不被 I^I^ 改变
+- I~I~ 为 I 的最终近似值, I~=I^×K
+
+I 是一个积分乘积, 所以可以进行分解. 即: I(g()f())=I(g())I(f())
+
+$I(f(Θ)L_⊥)≈\tilde{I}(f(Θ)L_⊥)\\ \tilde{I} (f(Θ)L_⊥)=K× \hat{I} (f(Θ)L_⊥)\\K=\frac{I(f(Θ))}{\hat{I}(f(Θ))}$(79)
+
+当 L⊥ 为常量时, I~I~ 等价于 I, 由此得到正确的结果:
+
+$$\tilde{I}(f(\Theta)L_⊥^\text{constant}) &= L_⊥^\text{constant} \hat{I}(f(\Theta)) \frac{I(f(\Theta))}{\hat{I}(f(\Theta))} \\&= L_⊥^\text{constant} I(f(\Theta))\\&= I(f(\Theta)L_⊥^\text{constant})$$
+
+同样, 也可以证明, 当 v=n 时结果正确, 因为在这种情况下 I=I^:
+
+$$\tilde{I}(f(\Theta)L_⊥) &= I(f(\Theta)L_⊥) \frac{I(f(\Theta))}{I(f(\Theta))}    \\ &= I(f(\Theta)L_⊥)$$
+
+最后, 通过将 L⊥=L⊥¯+(L⊥−L⊥¯)=L⊥¯+ΔL⊥代入I~I~, 可以证明比例因子 K 满足平均辐照度(L⊥¯)要求.
+
+$$\tilde{I}(f(\Theta) L_⊥) &= \tilde{I}\left[f\left(\Theta\right) \left(\bar{L_⊥} + \Delta L_⊥\right)\right] \\&= K \times \hat{I}\left[f\left(\Theta\right) \left(\bar{L_⊥} + \Delta L_⊥\right)\right] \\&= K \times \left[\hat{I}\left(f\left(\Theta\right)\bar{L_⊥}\right) + \hat{I}\left(f\left(\Theta\right)\Delta L_⊥\right)\right] \\&= K \times \hat{I}\left(f\left(\Theta\right)\bar{L_⊥}\right) + K \times \hat{I}\left(f\left(\Theta\right) \Delta L_⊥\right) \\&= \tilde{I}\left(f\left(\Theta\right)\bar{L_⊥}\right) + \tilde{I}\left(f\left(\Theta\right) \Delta L_⊥\right) \\&= I\left(f\left(\Theta\right)\bar{L_⊥}\right) + \tilde{I}\left(f\left(\Theta\right) \Delta L_⊥\right)$$
+
+上述结果表明, 平均辐照度的计算正确, 即: $I(f(Θ)L_⊥^¯)$.
+
+考虑这种近似的一种方法是, 它将辐照度 L⊥ 分成两部分, 平均 L⊥¯和来自平均的 ΔL⊥, 然后正确地计算平均部分的积分, 再加上delta部分的简化积分:
+
+$$approximation(L_⊥)=correct(L_⊥^¯)+simplified(L_⊥−L_⊥^¯)$$(80)
+
+
+
+$$\hat{I}(f(n, \alpha) L_⊥) = \int_\Omega f(l, n, \alpha) L_⊥(l) \left< n\cdot l \right> \partial l   \\\hat{I}(f(n, \alpha))     = \int_\Omega f(l, n, \alpha)        \left< n\cdot l\right> \partial l   \\I(f(n, v, \alpha))        = \int_\Omega f(l, n, v, \alpha)     \left< n\cdot l \right> \partial l$$
+
+所有这三个方程都可以很容易地预先计算好并存储在查找表中
+
+##### 5.3.4.2.2 离散域
+
+在离散域中, [81 中的方程变为:
+
+$$\hat{I}(f(n, \alpha)  L_⊥) \equiv \frac{1}{N}\sum_{\forall \, i \in image} f(l_i, n, \alpha)  L_⊥(l_i) \left< n\cdot l\right>  \\\hat{I}(f(n, \alpha))     \equiv \frac{1}{N}\sum_{\forall \, i \in image} f(l_i, n, \alpha)          \left< n\cdot l\right>  \\I(f(n, v, \alpha))        \equiv \frac{1}{N}\sum_{\forall \, i \in image} f(l_i, n, v, \alpha)       \left< n\cdot l\right>$$(82)
+
+然而, 在实践中, 使用 *重要性抽样*, 需要考虑分布的 pdf, 并添加一项 $\frac{⟨v⋅h⟩}{D(hi,α)⟨n⋅h⟩}$.
+
+$$\hat{I}(f(n, \alpha)  L_⊥) \equiv \frac{4}{N}\sum_i^N f(l_i, n, \alpha)    \frac{\left< v\cdot h\right>}{D(h_i, \alpha)\left< n\cdot h\right>}  L_⊥(l_i) \left< n\cdot l\right>  \\\hat{I}(f(n, \alpha))     \equiv \frac{4}{N}\sum_i^N f(l_i, n, \alpha)    \frac{\left< v\cdot h\right>}{D(h_i, \alpha)\left< n\cdot h\right>}          \left< n\cdot l\right>  \\I(f(n, v, \alpha))        \equiv \frac{4}{N}\sum_i^N f(l_i, n, v, \alpha) \frac{\left< v\cdot h\right>}{D(h_i, \alpha)\left< n\cdot h\right>}          \left< n\cdot l\right>$$(83)
+
+回顾对于 I^I^, 我们假定 v=n, 方程 [83 简化为:
+
+$$\hat{I}(f(n, \alpha)  L_⊥) \equiv \frac{4}{N}\sum_i^N \frac{f(l_i, n,    \alpha)}{D(h_i, \alpha)}  L_⊥(l_i) \left< n\cdot l\right>  \\\hat{I}(f(n, \alpha))     \equiv \frac{4}{N}\sum_i^N \frac{f(l_i, n,    \alpha)}{D(h_i, \alpha)}          \left< n\cdot l\right>  \\I(f(n, v, \alpha))        \equiv \frac{4}{N}\sum_i^N \frac{f(l_i, n, v, \alpha)}{D(h_i, \alpha)} \frac{\left< v\cdot h\right>}{\left< n\cdot h\right>} \left< n\cdot l\right>$$(84)
+
+然后, 可以将前两个方程合并, 得到$$LD(n,α)=\frac{\hat{I}(f(n,α)L_⊥)}{\hat{I}(f(n,α))}$$
+
+$$LD(n, \alpha)       \equiv \frac{\sum_i^N \frac{f(l_i, n, \alpha)}{D(h_i, \alpha)}  L_⊥(l_i) \left< n\cdot l\right>}{\sum_i^N \frac{f(l_i, n, \alpha)}{D(h_i, \alpha)}\left< n\cdot l\right>}$$(85)
+
+$$I(f(n, v, \alpha))  \equiv \frac{4}{N}\sum_i^N \frac{f(l_i, n, v, \alpha)}{D(h_i, \alpha)} \frac{\left< v\cdot h\right>}{\left< n\cdot h\right>} \left< n\cdot l\right>$$(86)
+
+请注意, 到这里, 几乎可以离线计算两个剩下的方程. 
+
+唯一的困难在于, 当预先计算这些积分时, 我们不知道 f0 或 f90. 
+
+在后面我们会看到, 我们可以在运行时将这些项合并到方程86, 可惜, 对方程 85 无法这样做, 我们必须假定 f0=f90=1 (即: Fresnel项的值总是1).
+
+还必须处理BRDF的可见度项, 在实践中, 保留它得到的结果与实际情况相比略有降低, 所以我们也假定 V=1.
+
+
+
+替换方程85 和 86 中的 f:
+
+$$f(l_i, n, \alpha) = D(h_i, \alpha)F(f_0, f_{90}, \left< v\cdot h\right>)V(l_i, v, \alpha)$$(87)
+
+第一个简化是, BRDF中的 D(hi,α) 与分母(来自重要性抽样的 pdf)相抵消, F 和 V 消失,
+
+$$LD(n, \alpha)       \equiv \frac{\sum_i^N V(l_i, v, \alpha)\left< n\cdot l\right> L_⊥(l_i) }{\sum_i^N \left< n\cdot l\right>}$$(88)
+
+$$I(f(n, v, \alpha))  \equiv \frac{4}{N}\sum_i^N \color{green}{F(f_0, f_{90}, \left< v\cdot h\right>)} V(l_i, v, \alpha)\frac{\left< v\cdot h\right>}{\left< n\cdot h\right>} \left< n\cdot l\right>$$(89)
+
+将Fresnel项代入方程 89:
+
+$$F(f_0, f_{90}, \left< v\cdot h\right>) = f_0 (1 - F_c(\left< v\cdot h\right>)) + f_{90} F_c(\left< v\cdot h\right>) \\F_c(\left< v\cdot h\right>) = (1 - \left< v\cdot h\right>)^5$$(90)
+
+$$I(f(n, v, \alpha))  \equiv \frac{4}{N}\sum_i^N \left[\color{green}{f_0 (1 - F_c(\left< v\cdot h\right>)) + f_{90} F_c(\left< v\cdot h\right>)}\right] V(l_i, v, \alpha)\frac{\left< v\cdot h\right>}{\left< n\cdot h\right>} \left< n\cdot l\right> \\$$(91)
+
+最后, 我们提取可以离线计算的方程(即: 不依赖于运行时参数 f0 和 f90 的部分):
+
+$$I(f(n, v, \alpha))  \equiv \frac{4}{N}\sum_i^N \left[\color{green}{f_0 (1 - F_c(\left< v\cdot h\right>)) + f_{90} F_c(\left< v\cdot h\right>)}\right] V(l_i, v, \alpha)\frac{\left< v\cdot h\right>}{\left< n\cdot h\right>} \left< n\cdot l\right> \\I(f(n, v, \alpha)) \equiv \color{green}{f_0   } \frac{4}{N}\sum_i^N  \color{green}{(1 - F_c(\left< v\cdot h\right>))} V(l_i, v, \alpha)\frac{\left< v\cdot h\right>}{\left< n\cdot h\right>} \left< n\cdot l\right> \\ \+\color{green}{f_{90}} \frac{4}{N}\sum_i^N  \color{green}{     F_c(\left< v\cdot h\right>) } V(l_i, v, \alpha)\frac{\left< v\cdot h\right>}{\left< n\cdot h\right>} \left< n\cdot l\right>$$(92)
+
+请注意, DFG1 和 DFG2 仅取决于 n⋅v, 即法向 n 和视线方向 v 之间的夹角. 这是正确的, 因为积分关于 n 对称. 进行积分时, 可以选择任何 v, 只要它满足 n⋅v
+
+将所有结果重新组合在一起, 得到:
+
+*Important*
+
+$$\Lout(n,v,\alpha,f_0,f_{90})     &\simeq \big[ f_0 \color{red}{DFG_1( n\cdot v, \alpha)} + f_{90} \color{red}{DFG_2( n\cdot v, \alpha)} \big] \times LD(n, \alpha) \\DFG_1(\alpha, \left< n\cdot v\right>) &=      \frac{4}{N}\sum_i^N  \color{green}{(1 - F_c(\left< v\cdot h\right>))} V(l_i, v, \alpha)\frac{\left< v\cdot h\right>}{\left< n\cdot h\right>} \left< n\cdot l\right> \\DFG_2(\alpha, \left< n\cdot v\right>) &=      \frac{4}{N}\sum_i^N  \color{green}{     F_c(\left< v\cdot h\right>) } V(l_i, v, \alpha)\frac{\left< v\cdot h\right>}{\left< n\cdot h\right>} \left< n\cdot l\right> \\LD(n, \alpha)                    &=      \frac{\sum_i^N V(l_i, n, \alpha)\left< n\cdot l\right> L_⊥(l_i) }{\sum_i^N \left< n\cdot l\right>}$$
 
 
 
 #### 5.3.4.3 DFG1 和 DFG2 项的可视化
 
+DFG1 和 DFG2 项既可以在常规2D纹理中预先计算并使用 (n⋅v,α) 作为索引进行双线性采样,也可以在运行时使用表面的解析近似进行计算. 
 
+| DFG1DFG1                                                     | DFG2DFG2                                                     | DFG1,DFG2,0DFG1,DFG2,0                                       |
+| :----------------------------------------------------------- | :----------------------------------------------------------- | :----------------------------------------------------------- |
+| [![img](https://jerkwin.github.io/filamentcn/images/ibl/dfg1.png)](https://jerkwin.github.io/filamentcn/images/ibl/dfg1.png) | [![img](https://jerkwin.github.io/filamentcn/images/ibl/dfg2.png)](https://jerkwin.github.io/filamentcn/images/ibl/dfg2.png) | [![img](https://jerkwin.github.io/filamentcn/images/ibl/dfg.png)](https://jerkwin.github.io/filamentcn/images/ibl/dfg.png) |
+
+**表 15:** Y轴: αα. X轴: cosθ
+
+DFG1 和 DFG2 处于方便的 [0,1][0,1] 范围内, 但是8位的纹理没有足够的精度, 并且会引起问题. 不幸的是, 在移动设备上, 16位或浮点纹理并不普遍, 而且采样器数量也有限. 尽管使用纹理的着色器代码非常简单, 有吸引力, 但使用解析近似可能更好. 但请注意, 由于我们只需要存储两项, OpenGL ES 3.0的RG16F纹理格式是一个很好的选择.
+
+
+
+解析近似见[[Karis14](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-karis14)], 其本身基于[[Lazarov13](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-lazarov13)]. [[Narkowicz14](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-narkowicz14)]是另一个有趣的近似. 
+
+请注意, 这两个近似与节 [5.3.4.7](https://jerkwin.github.io/filamentcn/Filament.md.html#toc5.3.4.7)中介绍的能量补偿项不兼容. [表 16](https://jerkwin.github.io/filamentcn/Filament.md.html#表_textureapproxdfg)给出了这些近似的直观表示.
+
+| DFG1DFG1                                                     | DFG2DFG2                                                     | DFG1,DFG2,0DFG1,DFG2,0                                       |
+| :----------------------------------------------------------- | :----------------------------------------------------------- | :----------------------------------------------------------- |
+| [![img](https://jerkwin.github.io/filamentcn/images/ibl/dfg1_approx.png)](https://jerkwin.github.io/filamentcn/images/ibl/dfg1_approx.png) | [![img](https://jerkwin.github.io/filamentcn/images/ibl/dfg2_approx.png)](https://jerkwin.github.io/filamentcn/images/ibl/dfg2_approx.png) | [![img](https://jerkwin.github.io/filamentcn/images/ibl/dfg_approx.png)](https://jerkwin.github.io/filamentcn/images/ibl/dfg_approx.png) |
+
+**表 16:** Y轴: αα. X轴: cosθ
 
 #### 5.3.4.4 LD 项的可视化
 
+LD 为一个函数对环境的卷积, 此函数只取决于 α 参数;LD 可以方便地存储在mip映射的立方体贴图中, 其中增加的LOD接收使用增大的粗糙度进行预先过滤的环境. 
 
+为了充分利用每个mipmap级别, 有必要重新映射 α; 我们发现使用 γ=2 的幂函数重新映射效果很好并且很方便.
+
+$$α=perceptualRoughness^2\\lodα=α^{1/2}=perceptualRoughness$$
 
 
 
 #### 5.3.4.5 间接镜面反射分量和间接漫反射分量的可视化
 
+[![img](https://jerkwin.github.io/filamentcn/images/ibl/ibl_visualization.jpg)](https://jerkwin.github.io/filamentcn/images/ibl/ibl_visualization.jpg)
 
+**图 54:** 间接漫反射和镜面反射的分解
 
 #### 5.3.4.6 IBL计算的实现
 
+```glsl
+vec3 ibl(vec3 n, vec3 v, vec3 diffuseColor, vec3 f0, vec3 f90, float perceptualRoughness) {
+    vec3 r = reflect(n);
+    vec3 Ld = textureCube(irradianceEnvMap, r) * diffuseColor;
+    vec3 Lld = textureCube(prefilteredEnvMap, r, computeLODFromRoughness(perceptualRoughness));
+    vec2 Ldfg = textureLod(dfgLut, vec2(dot(n, v), perceptualRoughness), 0.0).xy;
+    vec3 Lr =  (f0 * Ldfg.x + f90 * Ldfg.y) * Lld;
+    return Ld + Lr;
+}
+```
 
+可以通过使用球谐函数而不是辐照度立方贴图, 以及 DFG LUT的解析近似来保存几个纹理查找表
+
+```glsl
+vec3 irradianceSH(vec3 n) {
+    // uniform vec3 sphericalHarmonics[9]
+    // 我们只使用前两个波段以获得更好的性能
+    return
+          sphericalHarmonics[0]
+        + sphericalHarmonics[1] * (n.y)
+        + sphericalHarmonics[2] * (n.z)
+        + sphericalHarmonics[3] * (n.x)
+        + sphericalHarmonics[4] * (n.y * n.x)
+        + sphericalHarmonics[5] * (n.y * n.z)
+        + sphericalHarmonics[6] * (3.0 * n.z * n.z - 1.0)
+        + sphericalHarmonics[7] * (n.z * n.x)
+        + sphericalHarmonics[8] * (n.x * n.x - n.y * n.y);
+}
+
+// 注意: 如果使用了多重散射的能量补偿项此近似无效// 我们使用DFG LUT分辨率来实现多重散射
+vec2 prefilteredDFG(float NoV, float perceptualRoughness) {
+    // 基于Lazarov的Karis逼近
+    const vec4 c0 = vec4(-1.0, -0.0275, -0.572,  0.022);
+    const vec4 c1 = vec4( 1.0,  0.0425,  1.040, -0.040);
+    vec4 r = perceptualRoughness * c0 + c1;
+    float a004 = min(r.x * r.x, exp2(-9.28 * NoV)) * r.x + r.y;
+    return vec2(-1.04, 1.04) * a004 + r.zw;
+    // 基于Karis的Zioma逼近
+    // return vec2(1.0, pow(1.0 - max(perceptualRoughness, NoV), 3.0));
+}
+
+// 注意: 这是上面函数的DFG LUT实现
+vec2 prefilteredDFG_LUT(float coord, float NoV) {
+    // coord = sqrt(roughness)
+    // 计算mipmap时IBL预过滤代码使用的贴图
+    return textureLod(dfgLut, vec2(NoV, coord), 0.0).rg;
+}
+
+vec3 evaluateSpecularIBL(vec3 r, float perceptualRoughness) {
+    // 假定为256x256的立方体贴图, 有9个mip级别
+    float lod = 8.0 * perceptualRoughness;
+    // decodeEnvironmentMap() 用于解码RGBM,
+    // 或者no-op, 如果立方体贴图存储在浮点纹理中
+    return decodeEnvironmentMap(textureCubeLodEXT(environmentMap, r, lod));
+}
+
+vec3 evaluateIBL(vec3 n, vec3 v, vec3 diffuseColor, vec3 f0, vec3 f90, float perceptualRoughness) {
+    float NoV = max(dot(n, v), 0.0);
+    vec3 r = reflect(-v, n);
+
+    // 间接镜面
+    vec3 indirectSpecular = evaluateSpecularIBL(r, perceptualRoughness);
+    vec2 env = prefilteredDFG_LUT(perceptualRoughness, NoV);
+    vec3 specularColor = f0 * env.x + f90 * env.y;
+
+    // 间接漫反射
+    // 乘以Lambertian BRDF来计算辐射的辐照度
+    // 对于迪斯尼BRDF, 我们必须删除Fresnel项
+    // 它取决于NoL(它会放到SH中). Lambertian BRDF
+    // 可以直接在SH中烘焙以节省这里的乘法
+    vec3 indirectDiffuse = max(irradianceSH(n), 0.0) * Fd_Lambert();
+
+    // 间接贡献
+    return diffuseColor * indirectDiffuse + indirectSpecular * specularColor;
+}
+```
 
 #### 5.3.4.7 多重散射的预积分
 
+使用第二个缩放的镜面波瓣来补偿由于只考虑BRDF中的单重散射事件而导致的能量损失. 这个能量补偿波瓣使用的缩放项取决于 r, 其定义如下:
 
+$r=∫_ΩD(l,v)V(l,v)⟨n⋅l⟩∂l$(93)
+
+或者, 使用重要性抽样进行计算
+
+$r≡\frac{4}{N}∑_i^NV(l_i,v,α)\frac{⟨v⋅h⟩}{⟨n⋅h⟩}⟨n⋅l⟩$(94)
+
+非常类似于方程 92 中的 DFG1和 DFG2.事实上, 除没有Fresnel项外, 它们是一样的.
+
+通过进一步假定 f90=1, 可以重写 DFG1 和 DFG2以及 Lout 的重建:
+
+$$L_{out}(n,v,\alpha,f_0)\simeq \big[ (1 - f_0) \color{red}{DFG_1^{\text{multiscatter}}( n\cdot v, \alpha)} \\+ f_0 \color{red}{DFG_2^{\text{multiscatter}}( n\cdot v, \alpha)} \big] \\ \times LD(n, \alpha) $$
+
+$$DFG_1^{\text{multiscatter}}(\alpha, \left< n\cdot v\right>)=\frac{4}{N}\sum_i^N  \color{green}{F_c(\left< v\cdot h\right>)} \\V(l_i, v, \alpha)\frac{\left< v\cdot h\right>}{\left< n\cdot h\right>} \left<n⋅l\right> $$
+
+$$DFG_2^{\text{multiscatter}}(\alpha, \left< n\cdot v\right>)=\frac{4}{N}\sum_i^N V(l_i,v,α)\frac{⟨v⋅h⟩}{⟨n⋅h⟩}⟨n⋅l⟩$$
+
+$$LD(n, \alpha)=\frac{\sum_i^N V(l_i, n, \alpha)\left<n⋅l\right>L_⊥(l_i) }{\sum_i^N V(l_i, n, \alpha)\left<n⋅l\right>}$$
+
+
+
+简单地用这两个新的 DFG项替换节 [9.5]给出的实现中所用的项即可:
+
+```
+float Fc = pow(1 - VoH, 5.0f);
+r.x += Gv * Fc;
+r.y += Gv;
+```
+
+**清单 29:** 多重散射 LDFG 项的C++实现
+
+```
+vec2 dfg = textureLod(dfgLut, vec2(dot(n, v), perceptualRoughness), 0.0).xy;
+// (1 - f0) * dfg.x + f0 * dfg.y
+vec3 specularColor = mix(dfg.xxx, dfg.yyy, f0);
+```
+
+**清单 30:** 基于图像的光照计算的GLSL实现, 使用了多重散射LUT
 
 #### 5.3.4.8 总结
 
+为计算远程的基于图像的灯光的镜面反射贡献,不得不做出一些近似和折衷:
 
+- **v=n**, 到目前为止,在积分IBL的非常数部分时, 此假定引入的误差最大. 这导致与视点的粗糙度有关的各向异性 完全丧失.
+- IBL非常数部分的粗糙度贡献被离散分级, 并使用三线性滤波在不同级别之间进行插值. 这在低粗糙度时最为明显(例如: 对一个9 LOD的立方体贴图约为0.0625).
+- 由于使用mipmap级别存储预积分的环境, 因此它们无法用于纹理缩小, 而这是它们应该做的. 这可能导致高频区域, 低粗糙度环境, 遥远或较小的物体会出现锯齿或莫尔条纹. 由于缓存访问模式不佳, 这也会影响性能.
+- IBL的非常数部分**没有Fresnel项.**
+- IBL非常数部分的**可见度**=1.
+- Schlick的Fresnel项
+- 多重散射情况下 f90=1
+
+[![img](https://jerkwin.github.io/filamentcn/images/ibl/ibl_prefilter_vs_reference.png)](https://jerkwin.github.io/filamentcn/images/ibl/ibl_prefilter_vs_reference.png)
+
+**图 55:** 重要性采样参考(上)和预滤波IBL(中)之间的比较.
+
+[![img](https://jerkwin.github.io/filamentcn/images/ibl/ibl_stretchy_reflections_error.png)](https://jerkwin.github.io/filamentcn/images/ibl/ibl_stretchy_reflections_error.png)
+
+**图 56:** 假定 v=n 引起的反射错误(下) - "弹性反射"丢失.
+
+[![img](https://jerkwin.github.io/filamentcn/images/ibl/ibl_trilinear_0.png)](https://jerkwin.github.io/filamentcn/images/ibl/ibl_trilinear_0.png)
+
+**图 57:** 由于在粗糙度 = 0.0625的立方体贴图LOD中存储粗糙度而导致的错误(即: 在各级之间精确采样). 请注意, 我们看到的不是模糊, 而是两个模糊之间的"交叉阴纹".
+
+[![img](https://jerkwin.github.io/filamentcn/images/ibl/ibl_trilinear_1.png)](https://jerkwin.github.io/filamentcn/images/ibl/ibl_trilinear_1.png)
+
+**图 58:** 由于在粗糙度 = 0.125的立方体贴图LOD中存储粗糙度而导致的错误(即: 在1级精确采样). 当粗糙度与LOD非常匹配时, 在立方体贴图中进行三线性滤波引起的误差会减小. 注意由于 v=n 在掠射角处引起的误差.
+
+[![img](https://jerkwin.github.io/filamentcn/images/ibl/ibl_no_mipmaping.png)](https://jerkwin.github.io/filamentcn/images/ibl/ibl_no_mipmaping.png)
+
+**图 59:** 处于由彩色垂直条纹(隐藏了天空盒)组成的环境中, α=0 的金属球体上由于纹理缩小而形成的莫尔图案.
 
 ### 5.3.5 透明涂层
 
+当对IBL进行采样时, 透明涂层作为第二镜面反射的波瓣来计算.  这个镜面波瓣的取向沿视线方向, 因为无法在半球上进行合理地积分. 
 
+在实践中使用的这种近似. 它还给出了能量守恒步骤. 需要注意的是, 第二镜面波瓣的计算方式与主镜面波瓣完全相同, 使用了相同的DFG近似 .
+
+```
+// clearCoat_NoV == shading_NoV 如果透明涂层没有自己的法线贴图
+float Fc = F_Schlick(0.04, 1.0, clearCoat_NoV) * clearCoat;
+// 基础层衰减的能量补偿
+iblDiffuse  *= 1.0 - Fc;
+iblSpecular *= sq(1.0 - Fc);
+iblSpecular += specularIBL(r, clearCoatPerceptualRoughness) * Fc;
+```
+
+**清单 31:** 用于基于图像的光照的透明涂层镜面波瓣的GLSL实现
 
 ### 5.3.6 各向异性
 
+[[McAuley15](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-mcauley15)]给出了一种称为"弯曲反射向量"的技术, 该技术基于[[Revie12](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-revie12)]. 弯曲反射向量是各向异性光照的粗略近似, 但替代方案是使用重要性采样. 这种近似足够便宜, 并可以提供很好的结果
 
+```
+vec3 anisotropicTangent = cross(bitangent, v);
+vec3 anisotropicNormal = cross(anisotropicTangent, bitangent);
+vec3 bentNormal = normalize(mix(n, anisotropicNormal, anisotropy));
+vec3 r = reflect(-v, bentNormal);
+```
+
+**清单 32:** 弯曲反射向量的GLSL实现
+
+通过接受负的"各向异性"值可以使这种技术变得更加有用,当各向异性为负值时, 高光不在切线方向上, 而是在副切线方向上.
+
+```
+vec3 anisotropicDirection = anisotropy >= 0.0 ?bitangent : tangent;
+vec3 anisotropicTangent = cross(anisotropicDirection, v);
+vec3 anisotropicNormal = cross(anisotropicTangent, anisotropicDirection);
+vec3 bentNormal = normalize(mix(n, anisotropicNormal, anisotropy));
+vec3 r = reflect(-v, bentNormal);
+```
+
+**清单 33:** 弯曲反射向量的GLSL实现
 
 ### 5.3.7 次表面
 
-
-
 ### 5.3.8 布料
 
+布料模型的IBL实现比其他材质模型更复杂.主要区别在于使用了不同的NDF(Charlie, 高度相关的Smith GGX). 
 
+在计算IBL时, 我们使用拆分求和近似来计算BRDF的DFG项. 由于这个DFG项是设计用于不同的BRDF的, 因此不能用于布料BRDF. 
 
-### 5. 
-
-
-
-### 5. 
-
-### 5. 
-
-### 5. 
-
-### 5. 
-
-### 5. 
-
-### 5. 
+由于我们设计的布料BRDF不需要Fresnel项, 我们可以在DFG LUT的第三个通道中生成单个DG项.
 
 
 
-# 
+生成DG项时使用了[[Estevez17](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-estevez17)]推荐的均匀采样方法. 在这种情况下, pdf 为简单的 1/2π, 我们仍然必须使用Jacobian 1/4⟨v⋅h⟩.
+
+[![img](https://jerkwin.github.io/filamentcn/images/ibl/dfg_cloth.png)](https://jerkwin.github.io/filamentcn/images/ibl/dfg_cloth.png)
+
+**图 63:** DFG LUT的第三个通道编码了布料BRDF的DG项
+
+基于图像的光照的实现的其余部分与常规光照的实现步骤相同, 包括可选的次表面散射项及其包裹漫反射分量. 正如透明涂层IBL实现一样, 不能在半球上进行积分, 使用视线方向作为主要光照方向来计算包裹漫反射分量.
+
+```
+float diffuse = Fd_Lambert() * ambientOcclusion;
+#if defined(SHADING_MODEL_CLOTH)
+#if defined(MATERIAL_HAS_SUBSURFACE_COLOR)
+diffuse *= saturate((NoV + 0.5) / 2.25);
+#endif
+#endif
+
+vec3 indirectDiffuse = irradianceIBL(n) * diffuse;
+#if defined(SHADING_MODEL_CLOTH) && defined(MATERIAL_HAS_SUBSURFACE_COLOR)
+indirectDiffuse *= saturate(subsurfaceColor + NoV);
+#endif
+
+vec3 ibl = diffuseColor * indirectDiffuse + indirectSpecular * specularColor;
+```
+
+**清单 36:** 布料NDF的DFG近似的GLSL实现
+
+需要注意的是, 这只解决了部分IBL问题. 前面描述了预过滤镜面反射环境贴图与标准着色模型的BRDF卷积, 后者与布料BRDF不同. 为获得准确的结果, 理论上我们应该在渲染引擎中为每个BRDF提供一组IBL. 然而, 提供第二组IBL对于我们的使用情景来说是不实际的, 因此我们决定依赖现有的IBL.
+
+
+
+## 5.4 静态光照
+
+
+
+## 5.5  透明度和半透明光照
+
+
+
+### 5.5.1 透明度
+
+
+
+### 5.5.2 半透明 
+
+## 5.6 遮蔽 
+
+遮蔽是一个重要的暗化因素, 用于在各种尺度下重建阴影:
+
+小尺度: 微遮蔽, 用于处理折痕, 裂缝和空洞
+
+中等尺度: 宏遮蔽, 用于处理物体自身几何遮蔽或法线贴图(砖块等)中烘焙几何体的遮蔽.
+
+大尺度: 遮蔽来自物体之间的接触, 或来自物体自身的几何.
+
+目前忽略了微遮蔽, 工具和引擎通常以"孔洞贴图"的形式提供它. 
+
+Sébastien Lagarde在[[Lagarde14](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-lagarde14)]中提供了关于如何在Frostbite引擎中处理微遮蔽的有趣讨论: 在漫反射贴图中预先烘焙漫反射微遮蔽, 并在反射纹理中预先烘焙镜面微遮蔽. 
+
+在我们的系统中, 微遮蔽可以简单地在基色图中烘焙. 这必须在知道镜面光不受微遮蔽的影响情况下才可以.
+
+中等尺度的环境遮蔽在环境遮蔽贴图中预烘焙, 并作为材质参数提供
+
+大尺度的环境光遮蔽通常使用屏幕空间技术来计算;请注意, 当相机足够接近表面时, 这些技术也可用于中等尺度的环境遮蔽.
+
+**注意**: 为了防止在使用中等和大尺度遮蔽时过度变暗, Lagarde建议使用 min(AOmedium,AOlarge)
+
+### 5.6.1 漫反射遮蔽 
+
+在[[McGuire10](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-mcguire10)]中, Morgan McGuire在基于物理的渲染的情境下对环境遮蔽进行了形式化. 在他的表述中, McGuire定义了一个环境光照函数 La, 在我们的例子中, 这个函数是用球谐函数编码的. 他还定义了一个可见度函数 V , 如果在 ll 方向上有一条来自表面的视线未被遮蔽, 则 V(l)=1, 否则为0.
+
+利用这两个函数, 渲染方程的环境项可以表示为方程 95.
+
+$L(l,v)=∫_Ωf(l,v)L_a(l)V(l)⟨n⋅l⟩dl$(95)
+
+可以通过将可见度项与光照函数分开来近似此表达式, 如方程 96 所示.
+
+$L(l,v)≈(π∫_Ωf(l,v)L_a(l)dl)(\frac{1}{π}∫_ΩV(l)⟨n⋅l⟩dl)$(96)
+
+只有当远程光 La 不变且 f 为Lambertian项时, 这种近似才是精确的. 然而, McGuire指出, 如果两个函数在球体的大部分上相对平滑, 则这种近似是合理的. 这恰好是平行光探头(IBL)的情况.
+
+此近似的左侧项是IBL预计算的漫反射分量. 右侧项是介于0和1之间的标量因子, 表示一个点的可及性比例. 其相反数就是漫反射的环境遮蔽项, 如方程 97 所示.
+
+$AO=1−1π∫_ΩV(l)⟨n⋅l⟩dl$(97)
+
+由于使用预先计算的漫反射项, 因此无法在运行时计算着色点的精确可及性. 为了弥补预计算项中缺少的信息, 通过在着色点应用特定于表面材质的环境遮蔽因子来部分重建入射光.
+
+在实践中, 烘焙的环境遮蔽作为灰度纹理存储, 其分辨率常常比其他纹理(例如基色或法线)更低. 值得注意的是, 我们的材质模型的环境遮蔽性质旨在重建宏观水平的漫反射环境遮蔽. 虽然这种近似在物理上是不正确的, 但它在质量与性能之间达到了可接受的折衷.
+
+```
+// 间接漫反射
+vec3 indirectDiffuse = max(irradianceSH(n), 0.0) * Fd_Lambert();
+// 环境遮蔽
+indirectDiffuse *= texture2D(aoMap, outUV).r;
+```
+
+**清单 38:** 烘焙的漫反射环境遮蔽的GLSL实现
+
+请注意环境遮蔽项仅适用于间接光照.
+
+### 5.6.2 镜面遮蔽 
+
+镜面微遮蔽可以从 f0 导出, 它本身来自漫反射颜色. 推导基于以下知识: 真实世界的材料具有的反射率不会低于2%. 因此, 可以将0-2%范围内的值视为预烘焙的镜面遮蔽, 用于平滑地消除Fresnel项.
+
+```
+float f90 = clamp(dot(f0, 50.0 * 0.33), 0.0, 1.0);
+// 便宜的亮度近似
+float f90 = clamp(50.0 * f0.g, 0.0, 1.0);
+```
+
+**清单 39:** 预烘焙镜面遮蔽的GLSL实现
+
+前面提到的环境遮蔽的推导假定为Lambertian表面, 并且只适用于间接漫反射光照. 缺乏表面可及性信息对间接镜面光照的重建特别有害. 它通常表现为光线泄漏.
+
+Sébastien Lagarde在[[Lagarde14](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-lagarde14)]中提出了一种经验方法, 可以从漫反射遮蔽项推导出镜面遮蔽项. 方法没有任何物理基础, 但得到的结果在视觉上令人满意. 他的公式的目标是返回粗糙表面的未修改的漫反射遮蔽项. 对于光滑表面, 清单 40中实现的公式减少了垂直入射时遮蔽的影响, 并增加了掠射角处的遮蔽影响.
+
+Important
+
+```
+float computeSpecularAO(float NoV, float ao, float roughness) {
+    return clamp(pow(NoV + ao, exp2(-16.0 * roughness - 1.0)) - 1.0 + ao, 0.0, 1.0);
+}
+
+// 间接镜面
+vec3 indirectSpecular = evaluateSpecularIBL(r, perceptualRoughness);
+// 环境光遮蔽
+float ao = texture2D(aoMap, outUV).r;
+indirectSpecular *= computeSpecularAO(NoV, ao, roughness);
+```
+
+**清单 40:** Lagarde镜面遮蔽因子的GLSL实现
+
+请注意镜面遮蔽因子只用于间接光照.
+
+#### 5.6.2.1 水平镜面遮蔽
+
+当计算使用法线贴图的表面的镜面IBL贡献时, 可能最终得到一个指向表面的反射向量. 如果此反射向量直接用于着色, 则表面上不应照亮的位置会被照亮(假设表面不透明). 这是另一种光泄漏现象, 可以使用Jeff Russell给出的简单技术轻松地将其影响最小化[[Russell15](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-russell15)].
+
+关键的思想是遮蔽来自表面后面的光. 这很容易实现, 因为反射向量和表面法线之间的负点积表示指向表面的反射向量. [清单 41]中展示的实现类似于Russell的, 虽然没有使用美工可以控制的地平线衰减因子.
+
+```
+// 间接镜面
+vec3 indirectSpecular = evaluateSpecularIBL(r, perceptualRoughness);
+
+// 带衰减的水平遮蔽, 直接镜面也应该计算
+float horizon = min(1.0 + dot(r, n), 1.0);
+indirectSpecular *= horizon * horizon;
+```
+
+**清单 41:** 水平高光遮蔽的GLSL实现
+
+水平镜面遮蔽衰减很便宜, 但很容易根据需要省略它以提高性能.
+
+
+
+## 5.7 法线贴图
+
+用低多边形网格替换高多边形网格(使用基础贴图), 添加表面细节(使用细节贴图).
+
+鉴于法线贴图的性质(XYZ分量存储在切线空间中), 很显然, 诸如线性或叠加混合等简单方法无法使用. 我们将使用两种更先进的技术: 一种是数学上正确的技术, 另一种是适用于实时着色的近似技术.
+
+### 5.7.1 重定向法线贴图
+
+Colin Barré-Brisebois和Stephen Hill在[[Hill12](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-hill12)]
+
+它包括将细节图的基旋转到基本贴图的法线上. 这种技术使用最短弧四元数来施加旋转, 借助切线空间的性质, 可大大简化了旋转.
+
+```
+vec3 t = texture(baseMap,   uv).xyz * vec3( 2.0,  2.0, 2.0) + vec3(-1.0, -1.0,  0.0);
+vec3 u = texture(detailMap, uv).xyz * vec3(-2.0, -2.0, 2.0) + vec3( 1.0,  1.0, -1.0);
+vec3 r = normalize(t * dot(t, u) - u * t.z);
+return r;
+```
+
+**清单 42:** 重定向法线贴图的GLSL实现
+
+请注意, 此实现假定法线存储时未压缩, 并且在源纹理中处于[0..1]范围内.
+
+归一化步骤并不是严格必需的, 如果在运行时使用该技术, 可以忽略. 如果这样, `r`的计算变为`t * dot(t, u) / t.z - u`.
+
+由于这种技术比下面描述的技术略贵一些, 我们将主要离线使用它. 
+
+
+
+### 5.7.2 UDN混合
+
+[[Hill12](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-hill12)]中描述技术称为UDN混合, 它是偏导数混合技术的一种变体. 它的主要优点是需要的着色器指令数量较少(参见[清单 43](https://jerkwin.github.io/filamentcn/Filament.md.html#清单_udnblending)). 
+
+. 虽然它可以减少平面区域的细节, 但如果运行时必须要进行混合, 那UDN混合很有意义.
+
+```
+vec3 t = texture(baseMap,   uv).xyz * 2.0 - 1.0;
+vec3 u = texture(detailMap, uv).xyz * 2.0 - 1.0;
+vec3 r = normalize(t.xy + u.xy, t.z);
+return r;
+```
+
+**清单 43:** UDN混合的GLSL实现
+
+得到的结果在视觉上接近重定向法线贴图, 但对数据进行的仔细比较表明UDN确实不太正确.
+
+
+
+# 6 体积效应
+
+### 6.1 指数高度雾
+
+
+
+## 7 抗锯齿
+
+MSAA 
+
+Geometric AA 几何AA(法线和粗糙度)
+
+着色器抗锯齿(物体空间着色G-buffer AA
+
+## 8 成像管道
+
+光照部分描述了光线如何以物理的方式与场景中的表面相互作用. 为获得合理的结果, 我们必须更进一步, 考虑将根据光照方程计算的场景亮度转换为可显示的像素值时所需要的变换.
+
+我们将要使用的一系列转换形成以下成像管道:
+
+
+
+[![img](https://jerkwin.github.io/filamentcn/images/pipe.png)](https://jerkwin.github.io/filamentcn/images/pipe.png)
+
+**图 77:** 成像管道
+
+**注意**: *OETF*步骤是应用目标色彩空间的光电传递函数. 
+
+色彩空间(ACES, sRGB, Rec. 709, Rec. 2020等), 伽马/线性等
+
+
+
+### 8.1 基于物理的相机
+
+#### 8.1.1 曝光设置
+
+#### 8.1.2 曝光值
+
+##### 8.1.2.1 曝光值和亮度
+
+##### 8.1.2.2 曝光值和照度
+
+##### 8.1.2.3 曝光补偿
+
+#### 8.1.3 曝光
+
+#### 8.1.4 自动曝光
+
+##### 8.1.4.1 光斑测量
+
+##### 8.1.4.2 中心加权测量
+
+##### 8.1.4.3 适应
+
+#### 8.1.5 泛光
+
+
+
+### 8.2 光学后处理
+
+#### 8.2.1 彩色边纹
+
+#### 8.2.2 镜头光晕
+
+基于物理的方法来生成镜头光晕, 方法是对穿过镜头光学组的光线进行追踪, 但我们将使用基于图像的方法. 
+
+### 8.3 影片后处理
+
+#### 8.3.1 对比度
+
+#### 8.3.2 曲线
+
+#### 8.3.3 级别
+
+#### 8.3.4 颜色分级
+
+### 8.4 光路
+
+TODO
+
+#### 8.4.1 聚类前向渲染
+
+#### 8.4.2 实现说明
+
+##### 8.4.2.1 GPU灯光指定
+
+##### 8.4.2.2 CPU灯光指定
+
+##### 8.4.2.3 着色
+
+每个锥素的灯光列表可以作为SSBO(OpenGL ES 3.1)或纹理传递给片段着色器.
+
+##### 8.4.2.4 从深度到锥素
+
+##### 8.4.2.5 从锥素到深度
+
+
+
+### 8.5 验证
+
+...
+
+#### 8.5.1 场景引用可视化
+
+
+
+### 8.6 坐标系统
+
+
+
+## 9 附录
+
+### 9.1 镜面颜色
+
+
+
+### 9.2 IBL的重要性采样
+
+TODO
+
+### 9.3 选择BRDF采样的重要方向
+
+TODO
+
+### 9.4 Hammersley序列
+
+
+
+### 9.5 预计算L用于基于图像的光照
+
+
+
+### 9.6 球谐函数
+
+|  符号  | 定义                                   |
+| :----: | :------------------------------------- |
+|  Kml   | 归一化因子                             |
+| Pml(x) | 连带勒让德多项式                       |
+|  yml   | 球谐函数基, 或SH基                     |
+|  Lml   | 定义在单位球上的 L(s)L(s) 函数的SH系数 |
+
+TODO
+
+
+
+## 11 参考文献
+
+[**Ashdown98**] Ian Ashdown. 1998. Parsing the IESNA LM-63 photometric data file. http://lumen.iee.put.poznan.pl/kw/iesna.txt
+
+[**Ashikhmin00**] Michael Ashikhmin, Simon Premoze and Peter Shirley. A Microfacet-based BRDF Generator. *SIGGRAPH '00 Proceedings*, 65-74.
+
+[**Ashikhmin07**] Michael Ashikhmin and Simon Premoze. 2007. Distribution-based BRDFs.
+
+[**Burley12**] Brent Burley. 2012. Physically Based Shading at Disney. *Physically Based Shading in Film and Game Production, ACM SIGGRAPH 2012 Courses*.
+
+[**Estevez17**] Alejandro Conty Estevez and Christopher Kulla. 2017. Production Friendly Microfacet Sheen BRDF. *ACM SIGGRAPH 2017*.
+
+[**Hammon17**] Earl Hammon. 217. PBR Diffuse Lighting for GGX+Smith Microsurfaces. *GDC 2017*.
+
+[**Heitz14**] Eric Heitz. 2014. Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs. *Journal of Computer Graphics Techniques*, 3 (2).
+
+[**Heitz16**] Eric Heitz et al. 2016. Multiple-Scattering Microfacet BSDFs with the Smith Model. *ACM SIGGRAPH 2016*.
+
+[**Hill12**] Colin Barré-Brisebois and Stephen Hill. 2012. Blending in Detail. http://blog.selfshadow.com/publications/blending-in-detail/
+
+[**Karis13**] Brian Karis. 2013. Specular BRDF Reference. http://graphicrants.blogspot.com/2013/08/specular-brdf-reference.html
+
+[**Karis14**] Brian Karis. 2014. Physically Based Shading on Mobile. https://www.unrealengine.com/blog/physically-based-shading-on-mobile
+
+[**Kelemen01**] Csaba Kelemen et al. 2001. A Microfacet Based Coupled Specular-Matte BRDF Model with Importance Sampling. *Eurographics Short Presentations*.
+
+[**Krystek85**] M. Krystek. 1985. An algorithm to calculate correlated color temperature. *Color Research & Application*, 10 (1), 38–40.
+
+[**Krivanek08**] Jaroslave Krivànek and Mark Colbert. 2008. Real-time Shading with Filtered Importance Sampling. *Eurographics Symposium on Rendering 2008*, Volume 27, Number 4.
+
+[**Kulla17**] Christopher Kulla and Alejandro Conty. 2017. Revisiting Physically Based Shading at Imageworks. *ACM SIGGRAPH 2017*
+
+[**Lagarde14**] Sébastien Lagarde and Charles de Rousiers. 2014. Moving Frostbite to PBR. *Physically Based Shading in Theory and Practice, ACM SIGGRAPH 2014 Courses*.
+
+[**Lagarde18**] Sébastien Lagarde and Evgenii Golubev. 2018. The road toward unified rendering with Unity’s high definition rendering pipeline. *Advances in Real-Time Rendering in Games, ACM SIGGRAPH 2018 Courses*.
+
+[**Lazarov13**] Dimitar Lazarov. 2013. Physically-Based Shading in Call of Duty: Black Ops. *Physically Based Shading in Theory and Practice, ACM SIGGRAPH 2013 Courses*.
+
+[**McAuley15**] Stephen McAuley. 2015. Rendering the World of Far Cry 4. *GDC 2015*.
+
+[**McGuire10**] Morgan McGuire. 2010. Ambient Occlusion Volumes. *High Performance Graphics*.
+
+[**Narkowicz14**] Krzysztof Narkowicz. 2014. Analytical DFG Term for IBL. https://knarkowicz.wordpress.com/2014/12/27/analytical-dfg-term-for-ibl
+
+[**Neubelt13**] David Neubelt and Matt Pettineo. 2013. Crafting a Next-Gen Material Pipeline for The Order: 1886. *Physically Based Shading in Theory and Practice, ACM SIGGRAPH 2013 Courses*.
+
+[**Oren94**] Michael Oren and Shree K. Nayar. 1994. Generalization of lambert's reflectance model. *SIGGRAPH*, 239–246. ACM.
+
+[**Pattanaik00**] Sumanta Pattanaik00 et al. 2000. Time-Dependent Visual Adaptation For Fast Realistic Image Display. *SIGGRAPH '00 Proceedings of the 27th annual conference on Computer graphics and interactive techniques*, 47-54.
+
+[**Ramamoorthi01**] Ravi Ramamoorthi and Pat Hanrahan. 2001. On the relationship between radiance and irradiance: determining the illumination from images of a convex Lambertian object. *Journal of the Optical Society of America*, Volume 18, Number 10, October 2001.
+
+[**Revie12**] Donald Revie. 2012. Implementing Fur in Deferred Shading. *GPU Pro 2*, Chapter 2.
+
+[**Russell15**] Jeff Russell. 2015. Horizon Occlusion for Normal Mapped Reflections. http://marmosetco.tumblr.com/post/81245981087
+
+[**Schlick94**] Christophe Schlick. 1994. An Inexpensive BRDF Model for Physically-Based Rendering. *Computer Graphics Forum*, 13 (3), 233–246.
+
+[**Walter07**] Bruce Walter et al. 2007. Microfacet Models for Refraction through Rough Surfaces. *Proceedings of the Eurographics Symposium on Rendering*.
