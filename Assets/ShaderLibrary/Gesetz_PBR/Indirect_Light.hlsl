@@ -7,6 +7,7 @@
 #include "Lighting_Common.hlsl"
 #include "Materials_Input.hlsl"
 #include "Common_Shading.hlsl"
+#include "Ambient_Occlusion.hlsl"
 #include "UnityGlobalIllumination.cginc"
 
 //Diffuse BRDF 
@@ -550,6 +551,21 @@ UnityIndirect createIndirectLight (
 	return indirectLight;
 }
 
+// #include "UnityShaderVariables.cginc"
+    // // SH lighting environment
+    // half4 unity_SHAr;
+    // half4 unity_SHAg;
+    // half4 unity_SHAb;
+    // half4 unity_SHBr;
+    // half4 unity_SHBg;
+    // half4 unity_SHBb;
+    // half4 unity_SHC;
+
+// float3 IrradianceSH(float3 normal)
+// {
+// 	
+// }
+
 //Indirect Diffuse - UnityGI_Base   NO Lightmap
 float3 diffuseIrradiance(const float3 diffuseNormal,const ShadingParameters shadingParameters)
 {
@@ -560,53 +576,6 @@ float3 diffuseIrradiance(const float3 diffuseNormal,const ShadingParameters shad
 	#endif
 
 	#if defined(FORWARD_BASE_PASS) || defined(DEFERRED_PASS)
-		// #if defined(LIGHTMAP_ON)
-		// 	Fd =DecodeLightmap(UNITY_SAMPLE_TEX2D(unity_Lightmap, shadingParameters.lightmapUV));
-		// 	
-		// 	#if defined(DIRLIGHTMAP_COMBINED)
-		// 		float4 lightmapDirection = UNITY_SAMPLE_TEX2D_SAMPLER(
-		// 			unity_LightmapInd, unity_Lightmap, shadingParameters.lightmapUV
-		// 		);
-		// 		Fd = DecodeDirectionalLightmap(
-		// 			Fd, lightmapDirection, diffuseNormal
-		// 		);
-		// 	#endif
-		//
-		// 	//ApplySubtractiveLighting(i,indirectLight)
-		// 	#if SUBTRACTIVE_LIGHTING
-		// 		UNITY_LIGHT_ATTENUATION(attenuation, i, i.worldPos.xyz);
-		// 		attenuation = FadeShadows(i, attenuation);
-		//
-		// 		float ndotl = saturate(dot(i.normal, _WorldSpaceLightPos0.xyz));
-		// 		float3 shadowedLightEstimate =
-		// 			ndotl * (1 - attenuation) * _LightColor0.rgb;
-		// 		float3 subtractedLight = Fd - shadowedLightEstimate;
-		// 		subtractedLight = max(subtractedLight, unity_ShadowColor.rgb);
-		// 		subtractedLight =
-		// 			lerp(subtractedLight, Fd, _LightShadowData.x);
-		// 		Fd = min(subtractedLight, Fd);
-		// 	#endif
-		// #endif
-
-		// #if defined(DYNAMICLIGHTMAP_ON)
-		// 	float3 dynamicLightDiffuse = DecodeRealtimeLightmap(
-		// 		UNITY_SAMPLE_TEX2D(unity_DynamicLightmap, i.dynamicLightmapUV)
-		// 	);
-	 //
-		// 	#if defined(DIRLIGHTMAP_COMBINED)
-		// 		float4 dynamicLightmapDirection = UNITY_SAMPLE_TEX2D_SAMPLER(
-		// 			unity_DynamicDirectionality, unity_DynamicLightmap,
-		// 			i.dynamicLightmapUV
-		// 		);
-  //           	Fd += DecodeDirectionalLightmap(
-  //           		dynamicLightDiffuse, dynamicLightmapDirection, i.normal
-  //           	);
-		// 	#else
-		// 		Fd += dynamicLightDiffuse;
-		// 	#endif
-		// #endif
-
-		#if !defined(LIGHTMAP_ON) && !defined(DYNAMICLIGHTMAP_ON)
 			#if UNITY_LIGHT_PROBE_PROXY_VOLUME
 				if (unity_ProbeVolumeParams.x == 1) {
 					Fd = SHEvalLinearL0L1_SampleProbeVolume(
@@ -623,13 +592,12 @@ float3 diffuseIrradiance(const float3 diffuseNormal,const ShadingParameters shad
 			#else
 				Fd += max(0, ShadeSH9(float4(diffuseNormal, 1)));
 			#endif
-		#endif
 	#endif
 
 	return Fd;
 }
 
-//Indirect Specular-LG Term   UnityGI_IndirectSpecular  GI.specular
+//Indirect Specular-LD Term   UnityGI_IndirectSpecular  GI.specular
 float3 prefilteredRadiance(float3 reflectionDir,float roughness,float3 positionWS){
 	float3 Fr=0.0;
 	#if defined(FORWARD_BASE_PASS) || defined(DEFERRED_PASS)
@@ -640,6 +608,7 @@ float3 prefilteredRadiance(float3 reflectionDir,float roughness,float3 positionW
 			unity_SpecCube0_ProbePosition,
 			unity_SpecCube0_BoxMin, unity_SpecCube0_BoxMax
 		);
+	
 		float3 probe0 = Unity_GlossyEnvironment(
 			UNITY_PASS_TEXCUBE(unity_SpecCube0), unity_SpecCube0_HDR, envData
 		);
@@ -748,6 +717,8 @@ void evaluateClearCoatIBL(const PixelParams pixel, float diffuseAO,
 
 void evaluateIBL(const MaterialInputs material,const PixelParams pixel,const ShadingParameters shadingparameters,inout float4 color)
 {
+	float NdotV=shadingparameters.NdotV;
+	
 	float3 Fr=float3(0.0,0.0,0.0);
 	//SSAO
 //TODO
@@ -797,6 +768,8 @@ void evaluateIBL(const MaterialInputs material,const PixelParams pixel,const Sha
      //     Fr = isEvaluateSpecularIBL(pixel, shading_normal, shading_view, shading_NoV);
      // }
 // #endif
+
+	//
      float3 specularColor = specualrDFG(pixel);
      float3 r = getReflectedVector(pixel, shadingparameters.normalWS,shadingparameters.viewDir,shadingparameters.reflected);
      Fr = specularColor*prefilteredRadiance(r, pixel.roughness,shadingparameters.positionWS);
@@ -806,21 +779,21 @@ void evaluateIBL(const MaterialInputs material,const PixelParams pixel,const Sha
 	// Ambient occlusion
 	//float ssao = evaluateSSAO(interpolationCache);
     // float diffuseAO = min(material.ambientOcclusion, ssao);
+	//Not Support for SSAO
     float diffuseAO = material.ambientOcclusion;
- //    float specularAO = specularAO(shading_NoV, diffuseAO, pixel.roughness, interpolationCache);
+    float specularAO = SpecualrAO(NdotV, diffuseAO, pixel.roughness/*, interpolationCache*/);
  
-	// vec3 specularSingleBounceAO = singleBounceAO(specularAO) * pixel.energyCompensation;
- //    Fr *= specularSingleBounceAO;
-	Fr*=material.ambientOcclusion;
-	
+	 float3 specularSingleBounceAO = singleBounceAO(specularAO) * pixel.energyCompensation;
+	 Fr *= specularSingleBounceAO;
+
 // #if defined(MATERIAL_HAS_REFLECTIONS)
 //     ssrFr.rgb *= specularSingleBounceAO;
 // #endif
 
 	// diffuse layer
-	// float diffuseBRDF = singleBounceAO(diffuseAO); // Fd_Lambert() is baked in the SH below
-	float diffuseBRDF = diffuseAO;
- //    evaluateClothIndirectDiffuseBRDF(pixel, diffuseBRDF);
+	float diffuseBRDF = singleBounceAO(diffuseAO); // Fd_Lambert() is baked in the SH below
+
+	evaluateClothIndirectDiffuseBRDF(pixel, diffuseBRDF,NdotV);
 
 // #if defined(MATERIAL_HAS_BENT_NORMAL)
 //     vec3 diffuseNormal = shading_bentNormal;
@@ -841,9 +814,9 @@ void evaluateIBL(const MaterialInputs material,const PixelParams pixel,const Sha
 	// subsurface layer
 	 // evaluateSubsurfaceIBL(pixel, diffuseIrradiance, Fd, Fr);
 	
-	// // extra ambient occlusion term for the base and subsurface layers
- //    multiBounceAO(diffuseAO, pixel.diffuseColor, Fd);
- //    multiBounceSpecularAO(specularAO, pixel.f0, Fr);
+	// extra ambient occlusion term for the base and subsurface layers
+	 multiBounceAO(diffuseAO, pixel.diffColor, Fd);
+	multiBounceSpecularAO(specularAO, pixel.F0, Fr);
 
 	// sheen layer
     evaluateSheenIBL(pixel, diffuseAO/*, interpolationCache*/, Fd,Fr,shadingparameters);

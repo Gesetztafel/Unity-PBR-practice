@@ -219,7 +219,8 @@ float3 GetTangentSpaceNormal (Interpolators i) {
 				tex2D(_DetailNormalMap, UV_FUNCTION(i).zw), _DetailBumpScale
 			);
 		detailNormal = lerp(float3(0, 0, 1), detailNormal, GetDetailMask(i));
-		normal = BlendNormals(normal, detailNormal);
+		// normal = BlendNormals(normal, detailNormal);
+		normal=UDNNormalBlending(normal,detailNormal);
 	#endif
 	return normal;
 }
@@ -281,5 +282,20 @@ float GetRoughness (Interpolators i) {
 	#endif
 	return roughness*_Roughness;
 }
+
+//normal
+//SelfShadow-Blending in Detail
+//Reoriented normal mapping
+//t Base Normal u Detailed Normal
+float3 reorientedNormalMapping(float3 t,float3 u)
+{
+	return normalize(t*dot(t,u)-u*t.z);
+}
+//UDN Blending
+float3 UDNNormalBlending(float3 t,float3 u)
+{
+	float3 r=normalize(float3(t.xy+u.xy,t.z));
+	return r;
+} 
 
 #endif

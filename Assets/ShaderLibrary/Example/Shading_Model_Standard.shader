@@ -32,6 +32,9 @@
 		[NoScaleOffset] _DetailNormalMap ("Detail Normals", 2D) = "bump" {}
 		_DetailBumpScale ("Detail Bump Scale", Float) = 1
 
+		//Bent normal
+//		[NoScaleOffset] _BentNormalMap ("Bent Normals", 2D) = "bump" {}
+		
 		_Cutoff ("Alpha Cutoff", Range(0, 1)) = 0.5
 
 		[HideInInspector] _SrcBlend ("_SrcBlend", Float) = 1
@@ -131,6 +134,9 @@
 			// #pragma shader_feature _ REFRACTION
 			
 			// #pragma shader_feature BENT_NORMAL
+
+			// #pragma shader_feature MULTI_BOUNCE_AMBIENT_OCCLUSION
+			// #pragma shader_feature _ SPECULAR_AO_OFF SPECULAR_AO_SIMPLE SPECULAR_AO_BENT_NORMALS
 			
 			// Subsurface
 			// #pragma shader_feature SUBSURFACE_COLOR

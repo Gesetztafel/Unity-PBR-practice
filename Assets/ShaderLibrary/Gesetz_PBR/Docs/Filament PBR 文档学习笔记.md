@@ -55,7 +55,7 @@ Physically Based Rendering in Filament
 
 ## 4.1 标准模型
 
-模型的目标是表现标准材质的外观
+模型的目标是表现标准材质的外观:
 
 BSDF(双向散射分布函数, Bidirectional Scattering Distribution Function)
 
@@ -65,19 +65,15 @@ BTDF(双向透射函数, Bidirectional Transmittance Function).
 
 
 
-侧重于BRDF, 并且忽略BTDF, 或对其使用很粗糙的近似
-
-正确地模拟具有短的平均自由程的反射, 各向同性, 电介质或导体表面.
+侧重于BRDF, 并且忽略BTDF, 或对其使用很粗糙的近似;正确地模拟具有短的平均自由程的反射, 各向同性, 电介质或导体表面.
 
 
 
 BRDF描述中, 标准材质的表面响应由两项组成:
 
-
-
 - 漫反射分量或fd
 
-- 镜面反射分量或fr
+- 镜面反射分量或fr 
 
   表面, 表面法线, 入射光线和这些项之间的关系如[图 1](https://jerkwin.github.io/filamentcn/Filament.md.html#图_frfd)所示(我们暂时忽略次表面散射):
 
@@ -97,9 +93,7 @@ $f(v,l)=f_d(v,l)+f_r(v,l)$(1)
 
 能够描述光与不规则界面相互作用的模型
 
-微面片BRDF，
-
-BRDF指出, 表面在微观层面上并不光滑, 而是由大量随机排列的平面碎片组成, 这些平面碎片称为微面片
+微面片BRDF指出, 表面在微观层面上并不光滑, 而是由大量随机排列的平面碎片组成, 这些平面碎片称为微面片
 
 [![img](https://jerkwin.github.io/filamentcn/images/diagram_microfacet.png)](https://jerkwin.github.io/filamentcn/images/diagram_microfacet.png)
 
@@ -147,7 +141,7 @@ G 项模拟微面片的可见度(或遮蔽或阴影遮挡).
 
 
 
-由于此方程对镜面反射分量和漫反射分量都有效, 因此不同之处在于微面片BRDF的fmfm.
+由于此方程对镜面反射分量和漫反射分量都有效, 因此不同之处在于微面片BRDF的fm.
 
 此方程用于在 *微观层面* 上对半球进行积分:
 
@@ -157,9 +151,7 @@ G 项模拟微面片的可见度(或遮蔽或阴影遮挡).
 
 
 
-在宏观层面上, 表面被视为是平坦的. 
-
-假定从单个方向照亮的着色片段对应于表面上的单个点, 就有助于简化我们的方程.
+在宏观层面上, 表面被视为是平坦的. 假定从单个方向照亮的着色片段对应于表面上的单个点, 就有助于简化我们的方程.
 
 
 
@@ -171,9 +163,7 @@ G 项模拟微面片的可见度(或遮蔽或阴影遮挡).
 
 ## 4.2 电介质和导体
 
-金属(导体)表面
-
-非金属(电介质)表面
+金属(导体)表面;非金属(电介质)表面
 
 当入射光照射到BRDF控制的表面时, 反射光被分为两个独立的分量: 漫反射和镜面反射.
 
@@ -327,7 +317,7 @@ Fresnel效应,模拟 观察者看到的由表面反射的光的多少取决于�
 
 Fresnel项定义了光在两种不同介质的界面处如何反射和折射, 或反射和透射能量的比例. [[Schlick94](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-schlick94)]给出了Cook-Torrance镜面BRDF的Fresnel项的快速近似计算公式:
 
-$F_{Schlick}(v,h,f_0,f_90) = f_0 + (f_90 - f_0)(1 - v\cdot h)^5$(18)
+$F_{Schlick}(v,h,f_0,f_90) = f_0 + (f_{90} - f_0)(1 - v\cdot h)^5$(18)
 
 常数 f0 表示垂直入射时的镜面反射率, 电介质对应的值是单色的, 金属对应的值是多色的.实际值取决于界面的折射率. 
 
@@ -382,12 +372,9 @@ Lambertian BRDF非常高效, 并且提供的结果与更复杂的模型足够接
 
  [[Burley12](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-burley12)]给出的迪斯尼漫反射BRDF
 
-$\fDiffuse(v,l) = \frac{\sigma}{\pi} \schlick(n,l,1,\fGrazing) \schlick(n,v,1,\fGrazing)$
+$f_d(v,l) = \frac{\sigma}{\pi} F_{schlick}(n,l,1,f_{90}) F_{schlick}(n,v,1,f_{90})$
 
-其中
-
-
-$\fGrazing=0.5 + 2 \cdot \alpha \cos^2\theta_d$(22)
+其中$f_{90}=0.5 + 2 \cdot \alpha \cos^2\theta_d$(22)
 
 
 
@@ -477,39 +464,65 @@ void BRDF(...) {
 
 ### 4.7.1 漫反射的能量增益
 
+todo....
 
+[Lagarde 14] Renormalized Disney Diffuse
 
-[14]
+[Hammon 17]GDC 2017-GGX_Smith Diffuse
 
-[ 17]GDC 2017-GGX_Smith Diffuse
-
-[18] COD
+[ 18] COD:WWII 
 
 ### 4.7.2 镜面反射的能量损失
 
-Cook-Torrance BRDF 微面片层面
+Cook-Torrance BRDF 微面片层面,计算光-单次反弹
 
-计算光-单次反弹
+这种近似会导致高粗糙度时出现能量损失, 表面无法保持能量恒定. 
 
-导致高粗糙度时出现能量损失
+在单次反弹(或单重散射)模型中, 照射到表面的光线可以被反射到另一个微面片上, 并由于遮蔽和阴影项而被忽略. 然而, 如果我们考虑多次反弹(多重散射), 同一光线可能最终会离开微面片区域, 并被反射回观察者.
 
+[![img](https://jerkwin.github.io/filamentcn/images/diagram_single_vs_multi_scatter.png)](https://jerkwin.github.io/filamentcn/images/diagram_single_vs_multi_scatter.png)
 
+**图 12:** 单重散射(左)与多重散射
 
-单重散射(左)与多重散射
+基于这个简单的解释, 可以直观地推断出, 因为没有考虑多重散射事件, 表面越粗糙, 能量损失的可能性就越大. 这种能量损失会使粗糙的材质看起来变暗. 金属表面受到的影响特别大, 因为它们的所有反射都是镜面反射. 
 
+[![img](https://jerkwin.github.io/filamentcn/images/material_metallic_energy_loss.png)](https://jerkwin.github.io/filamentcn/images/material_metallic_energy_loss.png)
 
-
-白炉测试
-
-
-
-[[Heitz16](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-heitz16)] 多重散射BRDF的随机估计—— mean free path
+**图 13:** 由于单重散射, 变暗程度会随粗糙度增大而增加
 
 
 
-[[Kulla17](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-kulla17)] Kulla&Conty
 
-能量补偿项,额外BRDF波瓣
+
+[![img](https://jerkwin.github.io/filamentcn/images/material_metallic_energy_preservation.png)](https://jerkwin.github.io/filamentcn/images/material_metallic_energy_preservation.png)
+
+**图 14:** 多重散射的能量守恒
+
+可以使用一个白色的物体, 将其置于纯白色的均匀光照环境中, 来验证BRDF的能量守恒性. 
+
+如果达到能量守恒, 纯反射的金属表面(f0=1)应该无法与背景区分开来, 无论该表面的粗糙度如何.
+
+[![img](https://jerkwin.github.io/filamentcn/images/material_furnace_energy_loss.png)](https://jerkwin.github.io/filamentcn/images/material_furnace_energy_loss.png)
+
+**图 15:** 由于单重散射导致变暗程度随粗糙度增大而增加
+
+
+
+
+
+[![img](https://jerkwin.github.io/filamentcn/images/material_furnace_energy_preservation.png)](https://jerkwin.github.io/filamentcn/images/material_furnace_energy_preservation.png)
+
+**图 16:** 多重散射可以保证能量守恒
+
+
+
+
+
+
+
+[[Heitz16](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-heitz16)] 多重散射BRDF的随机估计—— mean free path;遗憾的是, 论文只给出了多重散射BRDF的随机估计.
+
+因此, 其解决方法不适用于实时渲染.[[Kulla17](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-kulla17)] Kulla&Conty:添加一个能量补偿项,作为额外BRDF波瓣
 
 $f_{ms}(l,v)=\frac{(1−E(l))(1−E(v))F^2_{avg}E_{avg}}{π(1−E_{avg})[1−F_{avg}(1−E_{avg})]}$(23)
 
@@ -1284,7 +1297,7 @@ SH分解在概念上类似于傅里叶变换, 它以频域中的正交基表示�
 
 在实践中, 我们使用 ⟨cosθ⟩ 对L⊥ 进行预卷积, 并使用基本缩放因子 Kml 预先缩放这些系数, 以便着色器中的重建代码尽可能简单:
 
-```
+```glsl
 vec3 irradianceSH(vec3 n) {
     // uniform vec3 sphericalHarmonics[9]
     // 我们只使用前两个波段以获得更好的性能
@@ -1416,7 +1429,7 @@ $$I(f(n, v, \alpha))  \equiv \frac{4}{N}\sum_i^N \left[\color{green}{f_0 (1 - F_
 
 *Important*
 
-$$\Lout(n,v,\alpha,f_0,f_{90})     &\simeq \big[ f_0 \color{red}{DFG_1( n\cdot v, \alpha)} + f_{90} \color{red}{DFG_2( n\cdot v, \alpha)} \big] \times LD(n, \alpha) \\DFG_1(\alpha, \left< n\cdot v\right>) &=      \frac{4}{N}\sum_i^N  \color{green}{(1 - F_c(\left< v\cdot h\right>))} V(l_i, v, \alpha)\frac{\left< v\cdot h\right>}{\left< n\cdot h\right>} \left< n\cdot l\right> \\DFG_2(\alpha, \left< n\cdot v\right>) &=      \frac{4}{N}\sum_i^N  \color{green}{     F_c(\left< v\cdot h\right>) } V(l_i, v, \alpha)\frac{\left< v\cdot h\right>}{\left< n\cdot h\right>} \left< n\cdot l\right> \\LD(n, \alpha)                    &=      \frac{\sum_i^N V(l_i, n, \alpha)\left< n\cdot l\right> L_⊥(l_i) }{\sum_i^N \left< n\cdot l\right>}$$
+$$L_{out}(n,v,\alpha,f_0,f_{90})     &\simeq \big[ f_0 \color{red}{DFG_1( n\cdot v, \alpha)} + f_{90} \color{red}{DFG_2( n\cdot v, \alpha)} \big] \times LD(n, \alpha) \\DFG_1(\alpha, \left< n\cdot v\right>) &=      \frac{4}{N}\sum_i^N  \color{green}{(1 - F_c(\left< v\cdot h\right>))} V(l_i, v, \alpha)\frac{\left< v\cdot h\right>}{\left< n\cdot h\right>} \left< n\cdot l\right> \\DFG_2(\alpha, \left< n\cdot v\right>) &=      \frac{4}{N}\sum_i^N  \color{green}{     F_c(\left< v\cdot h\right>) } V(l_i, v, \alpha)\frac{\left< v\cdot h\right>}{\left< n\cdot h\right>} \left< n\cdot l\right> \\LD(n, \alpha)                    &=      \frac{\sum_i^N V(l_i, n, \alpha)\left< n\cdot l\right> L_⊥(l_i) }{\sum_i^N \left< n\cdot l\right>}$$
 
 
 
@@ -1619,7 +1632,7 @@ vec3 specularColor = mix(dfg.xxx, dfg.yyy, f0);
 
 在实践中使用的这种近似. 它还给出了能量守恒步骤. 需要注意的是, 第二镜面波瓣的计算方式与主镜面波瓣完全相同, 使用了相同的DFG近似 .
 
-```
+```glsl
 // clearCoat_NoV == shading_NoV 如果透明涂层没有自己的法线贴图
 float Fc = F_Schlick(0.04, 1.0, clearCoat_NoV) * clearCoat;
 // 基础层衰减的能量补偿
@@ -1634,7 +1647,7 @@ iblSpecular += specularIBL(r, clearCoatPerceptualRoughness) * Fc;
 
 [[McAuley15](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-mcauley15)]给出了一种称为"弯曲反射向量"的技术, 该技术基于[[Revie12](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-revie12)]. 弯曲反射向量是各向异性光照的粗略近似, 但替代方案是使用重要性采样. 这种近似足够便宜, 并可以提供很好的结果
 
-```
+```glsl
 vec3 anisotropicTangent = cross(bitangent, v);
 vec3 anisotropicNormal = cross(anisotropicTangent, bitangent);
 vec3 bentNormal = normalize(mix(n, anisotropicNormal, anisotropy));
@@ -1645,7 +1658,7 @@ vec3 r = reflect(-v, bentNormal);
 
 通过接受负的"各向异性"值可以使这种技术变得更加有用,当各向异性为负值时, 高光不在切线方向上, 而是在副切线方向上.
 
-```
+```glsl
 vec3 anisotropicDirection = anisotropy >= 0.0 ?bitangent : tangent;
 vec3 anisotropicTangent = cross(anisotropicDirection, v);
 vec3 anisotropicNormal = cross(anisotropicTangent, anisotropicDirection);
@@ -1656,6 +1669,8 @@ vec3 r = reflect(-v, bentNormal);
 **清单 33:** 弯曲反射向量的GLSL实现
 
 ### 5.3.7 次表面
+
+TODO
 
 ### 5.3.8 布料
 
@@ -1675,7 +1690,7 @@ vec3 r = reflect(-v, bentNormal);
 
 基于图像的光照的实现的其余部分与常规光照的实现步骤相同, 包括可选的次表面散射项及其包裹漫反射分量. 正如透明涂层IBL实现一样, 不能在半球上进行积分, 使用视线方向作为主要光照方向来计算包裹漫反射分量.
 
-```
+```glsl
 float diffuse = Fd_Lambert() * ambientOcclusion;
 #if defined(SHADING_MODEL_CLOTH)
 #if defined(MATERIAL_HAS_SUBSURFACE_COLOR)
@@ -1699,17 +1714,52 @@ vec3 ibl = diffuseColor * indirectDiffuse + indirectSpecular * specularColor;
 
 ## 5.4 静态光照
 
+TODO
 
+球谐函数或球高斯光照贴图, 辐照度体积, PRT
 
 ## 5.5  透明度和半透明光照
+
+要正确地对透明表面进行光照, 我们首先必须了解如何应用材质的不透明度. 观察一个窗口, 你会发现漫反射是透明的. 另一方面, 镜面反射越亮, 窗口呈现的不透明度越低. 
 
 
 
 ### 5.5.1 透明度
 
+为正确地实现不透明度, 使用预乘的alpha格式. 给定所需的不透明度 αopacity, 漫反射颜色 σ (线性, 未预乘), 可以计算面片的有效不透明度.
 
+$$color=σ*α_{opacity}\\opacity=α_{opacity}$$
+
+物理解释是, 来源颜色的RGB分量定义像素发射多少光, 而alpha分量定义像素背后有多少光被遮挡. 
+
+混合函数:
+
+$$Blend_{src}=1\\Blend_{dst}=1-src_α$$
+
+```
+// baseColor已经预先乘过
+vec4 shadeSurface(vec4 baseColor) {
+    float alpha = baseColor.a;
+
+    vec3 diffuseColor = evaluateDiffuseLighting();
+    vec3 specularColor = evaluateSpecularLighting();
+
+    return vec4(diffuseColor + specularColor, alpha);
+}
+```
+
+**清单 37:** 被照亮表面透明度的GLSL实现
 
 ### 5.5.2 半透明 
+
+半透明材质可分为两类:
+
+- 表面半透明
+- 体积半透明
+
+体积半透明对于粒子系统的光照非常有用, 例如云或烟雾. 表面半透明可用于模拟具有透射散射的材料, 如蜡, 大理石, 皮肤等.
+
+[TODO]表面半透明度(BRDF+BTDF, BSSRDF)
 
 ## 5.6 遮蔽 
 
@@ -1877,6 +1927,8 @@ return r;
 
 ## 7 抗锯齿
 
+TODO
+
 MSAA 
 
 Geometric AA 几何AA(法线和粗糙度)
@@ -1947,15 +1999,104 @@ Geometric AA 几何AA(法线和粗糙度)
 
 ### 8.4 光路
 
-TODO
+引擎使用的光路或渲染方法可能会严重影响性能, 并且可能大大限制场景中可使用的灯光数目. 传统上, 3D引擎使用两种不同的渲染方法: 正向渲染和延迟渲染.
+
+目标是使用符合以下约束的渲染方法:
+
+- 低带宽要求
+- 每个像素多个动态灯光
+
+希望能够轻松支持:
+
+- MSAA
+- 透明
+- 多材质模型
+
+许多现代3D渲染引擎使用延迟渲染, 可以轻松支持数十, 数百甚至数千种灯光(以及其他优点). 遗憾的是, 这种方法在带宽方面非常昂贵. 使用我们的默认PBR材质模型, G缓冲区每像素使用160到192位, 这将直接导致相当高的带宽要求.
+
+
+
+另一方面, 正向渲染方法向来不擅长处理多个灯光. 常见的实现方法是多次渲染场景, 每次渲染一个可见光源, 然后再混合(累加)结果. 另一种方法是为场景中的每个物体指定固定的最大灯光数. 然而, 当物体占据世界中的大量空间时(建筑物, 道路等), 这是不切实际的.
+
+
+
+分块着色可用于前向渲染和延迟渲染方法. 思想是将屏幕划分成一个图块网格, 对每个图块, 查找可以影响其内部像素的灯光的列表. 这种做法具有减少过度绘制(在延迟渲染中)和大型物体着色计算(在前向渲染中)的优点. 然而, 这种技术存在深度不连续性的问题, 可能导致大量无关的工作.
+
+
 
 #### 8.4.1 聚类前向渲染
 
+聚类着色,用它的前向变体形式. 聚类着色扩展了分块渲染的想法, 但在第3个轴上添加了分段. "聚类"是在视图空间中完成的, 方法是将视锥划分为三维网格.
+
+首先在深度轴上对视锥进行切片,
+
+[![img](https://jerkwin.github.io/filamentcn/images/screenshot_sponza_slices.jpg)](https://jerkwin.github.io/filamentcn/images/screenshot_sponza_slices.jpg)
+
+**图 82:** 深度切片(16片)
+
+然后将深度切片与屏幕图块组合起来, 对视锥进行"体素化"(Voxelize). 我们将每个簇称为锥素, 因为它清楚地表明了它们代表的是什么(视锥空间中的体素). 
+
+[![img](https://jerkwin.github.io/filamentcn/images/screenshot_sponza_froxels1.jpg)](https://jerkwin.github.io/filamentcn/images/screenshot_sponza_froxels1.jpg)
+
+**图 83:** 视锥体素化(5×3图块, 8个深度切片)
+
+[![img](https://jerkwin.github.io/filamentcn/images/screenshot_sponza_froxels2.jpg)](https://jerkwin.github.io/filamentcn/images/screenshot_sponza_froxels2.jpg)
+
+**图 84:** 视锥体素化(5×3图块, 8个深度切片)
+
+在渲染帧之前, 会将场景中的每个灯光指定给与其相交的所有锥素. 灯光指定通道的结果是每个锥素的灯光列表. 在渲染通道中, 我们可以计算片段所属的锥素的ID, 从而得到影响该片段的灯光列表.
+
+深度切片不是线性的, 而是指数的. 在典型的场景中, 靠近近平面的像素多于远平面的. 因此, 锥素的指数网格可以改善最重要的灯光的分配.
+
+[![img](https://jerkwin.github.io/filamentcn/images/diagram_froxels1.png)](https://jerkwin.github.io/filamentcn/images/diagram_froxels1.png)
+
+**图 85:** 近: 0.1米, 远: 100米, 16片
+
+遗憾的是, 简单的指数体素化是不够的. 上图清楚地说明了世界空间如何沿切片分布, 但它无法显示靠近近平面的情况. 如果我们在较小的范围(0.1 m到7 m)内检查相同的分布, 我们可以看到一个有趣的问题, 如[图 86](https://jerkwin.github.io/filamentcn/Filament.md.html#图_froxeldistributionclose)所示.
+
+[![img](https://jerkwin.github.io/filamentcn/images/diagram_froxels2.png)](https://jerkwin.github.io/filamentcn/images/diagram_froxels2.png)
+
+**图 86:** 0.1-7m范围内的深度分布
+
+此图显示, 简单的指数分布使用了切片的一半, 这些切片与相机非常接近. 在这个特殊的例子中, 我们使用了前5米的16个切片中的8个. 由于动态世界灯光是点光源(球体)或聚光灯(锥体), 因此靠近近平面的分辨率完全不需要如此精细.
+
+解决方案是根据场景, 近平面和远平面手动调整第一个锥素的大小. 通过这样做, 我们可以更好地将剩余锥素分布在整个视锥内. [图 87](https://jerkwin.github.io/filamentcn/Filament.md.html#图_froxeldistributionexp)展示了如果我们使用0.1 m到5 m之间的特殊锥素时会发生什么情况.
+
+[![img](https://jerkwin.github.io/filamentcn/images/diagram_froxels3.png)](https://jerkwin.github.io/filamentcn/images/diagram_froxels3.png)
+
+**图 87:** 近: 0.1, 远: 100米, 16片, 特殊锥素: 0.1-5米
+
+
+
+这种新的分布更加高效, 并且可以在整个视锥中更好地分配灯光.
+
+
+
 #### 8.4.2 实现说明
+
+灯光指定可以通过两种不同的方式完成, 一种是在GPU上, 另一种是在CPU上.
 
 ##### 8.4.2.1 GPU灯光指定
 
+这种实现需要OpenGL ES 3.1以及对计算着色器的支持. 灯光存储在着色器存储缓冲区对象(SSBO)中, 并传递给计算着色器, 着色器将每个灯光指定给相应的锥素.
+
+视锥体素化只能由第一个计算着色器执行一次(只要投影矩阵不改变), 并且可以由另一个计算着色器对每帧执行灯光分配.
+
+计算着色器的线程模型特别适合这种任务. 我们只需调用与锥素同样的工作组(我们可以直接将X, Y和Z工作组计数映射到我们的锥素网格分辨率). 每个工作区将依次进行并遍历要指定的所有灯光.
+
+相交测试意味着简单的球体/视锥或锥体/视锥测试.
+
+有关GPU实现的源代码, 请参阅附录(仅限于点光源).
+
+
+
 ##### 8.4.2.2 CPU灯光指定
+
+在非OpenGL ES 3.1设备上, 可以在CPU上有效地执行灯光指定. 该算法与GPU实现不同. 引擎会将每个灯光"光栅化"为锥素, 而不是对每个锥素的每个灯光进行迭代. 
+
+与GPU变体相比, 这种技术具有额外好处, 可以提供更严格的剔除. CPU实现还可以更轻松地生成一个打包的灯光列表.
+
+
 
 ##### 8.4.2.3 着色
 
@@ -1963,7 +2104,79 @@ TODO
 
 ##### 8.4.2.4 从深度到锥素
 
+给定近平面 n, 远平面 f, 最大深度切片数 m 和[0..1]范围内的线性深度值 z, 方程 117 可用于计算给定位置的聚类索引.
+
+$$zToCluster(z,n,f,m)=floor(max(log_2(z)\frac{m}{-log_2(\frac{n}{f})}+m,0))$$(117)
+
+然而, 这一公式存在前面提到的分辨率问题. 可以通过引入 sn 来解决这个问题, 它是一个特殊的近似值, 用于定义第一个锥素的范围(第一锥素占据范围[n..sn], 其余的体素占据范围[sn..f]).
+
+$$zToCluster(z,n,sn,f,m)=floor(max(log_2(z)\frac{m-1}{-log_2(\frac{sn}{f})}+m,0))$$(118)
+
+方程 119 可用于从`gl_FragCoord.z`计算线性深度值(假定标准OpenGL投影矩阵).
+
+$$linearZ(z)=\frac{n}{f+z(n−f)}$$(119)
+
+通过预先计算两个项 c0 和 c1 可以简化这个方程, 
+
+$$c_1=\frac{f}{n}\\c_0=1-c_1\\linearZ(z)=\frac{1}{z⋅c_0+c_1}$$(120)
+
+这一简化非常重要, 因为我们将线性z值传递给 118 中的`log2`. 由于除法在对数下变为取负, 可以使用 −log2(z⋅c0+c1)来避免除法.
+
+```
+#define MAX_LIGHT_COUNT 16 // 每个锥素的最大光源数
+
+uniform uvec4 froxels; // res x, res y, count y, count y
+uniform vec4 zParams;  // c0, c1, index scale, index bias
+
+uint getDepthSlice() {
+    return uint(max(0.0, log2(zParams.x * gl_FragCoord.z + zParams.y) *
+            zParams.z + zParams.w));
+}
+
+uint getFroxelOffset(uint depthSlice) {
+    uvec2 froxelCoord = uvec2(gl_FragCoord.xy) / froxels.xy;
+    froxelCoord.y = (froxels.w - 1u) - froxelCoord.y;
+
+    uint index = froxelCoord.x + froxelCoord.y * froxels.z +
+            depthSlice * froxels.z * froxels.w;
+    return index * MAX_FROXEL_LIGHT_COUNT;
+}
+
+uint slice = getDepthSlice();
+uint offset = getFroxelOffset(slice);
+
+// 计算光照
+```
+
+**清单 46:** 根据片段的屏幕坐标计算锥素索引的GLSL实现
+
+为了高效地计算索引, 必须预先计算一些uniforms值. 用于预先计算这些uniforms值的代码见清单 47
+
+```
+froxels[0] = TILE_RESOLUTION_IN_PX;
+froxels[1] = TILE_RESOLUTION_IN_PX;
+froxels[2] = numberOfTilesInX;
+froxels[3] = numberOfTilesInY;
+
+zParams[0] = 1.0f - Z_FAR / Z_NEAR;
+zParams[1] = Z_FAR / Z_NEAR;
+zParams[2] = (MAX_DEPTH_SLICES - 1) / log2(Z_SPECIAL_NEAR / Z_FAR);
+zParams[3] = MAX_DEPTH_SLICES;
+```
+
+**清单 47:** 预先计算锥素索引
+
+
+
 ##### 8.4.2.5 从锥素到深度
+
+给定一个锥素索引 i, 一个特殊的近平面 sn, 一个远平面 f 和最大深度切片数 m, 方程 121 可以计算给定锥素的最小深度.
+
+$$clusterToZ(i≥1,sn,f,m)=2^{(i−m)\frac{-log_2(\frac{sn}{f})}{m-1}}$$(121)
+
+对于 i=0, z值为0. 此方程的结果在[0..1]范围内, 应该乘以 f 以得到以世界单位表示的距离.
+
+计算着色器实现应该使用`exp2`而不是`pow`. 可以对除法进行预先计算, 并将其作为uniform值传递.
 
 
 
@@ -1983,23 +2196,149 @@ TODO
 
 ### 9.1 镜面颜色
 
-
+...
 
 ### 9.2 IBL的重要性采样
 
-TODO
+在离散区域中, 积分可以使用方程 124 中定义的采样进行近似.
+
+$$$$(124)
+
+不幸的是, 计算这个积分需要的采样过多. 通常使用的一种技术是更频繁地选择更"重要"的采样, 这称为 *重要性采样*. 
+
+在我们的例子中, 我们将使用微面片法向的分布 Dggx 作为重要样本的分布
+
+使用重要性采样计算 Lout(n,v,Θ)的方法在方程125 中给出
+
+$$$$(125)
+
+在方程 125 中, p 为 *重要性采样* li 分布的概率密度函数(PDF). 这些样本依赖于 hi, v 和 α. PDF的定义见方程 127.
+
+
+
+hi 由我们选择的分布给出,*重要方向样本* li 为 v 绕 hi 的反射, 因此其PDF与 hi **不同**. 经变换后, 一个分布的PDF由下式给出:
+
+$$$$(126)
+
+其中 |J(Tr)|为变换的雅可比行列式. 在我们的例子中, 考虑从 hi 到 li 的变换, 其雅可比行列式在 127 中给出.
+
+$$$$(127)
+
+#### 9.2.1 选择重要方向
+
+详细信息请参阅节9.3 给定均匀分布 (ζϕ,ζθ)(, 重要方向 ll 由方程 128 定义.
+
+$$$$(128)
+
+通常, 使用Hammersley均匀分布算法选择 (ζϕ,ζθ)(ζϕ,ζθ), 具体细节见节 9.4
+
+#### 9.2.2 预过滤重要性采样
+
+重要性采样生成重要方向时只考虑PDF; 特别是, 它忽略了IBL的实际内容. 如果后者在没有大量样本的区域中包含高频信息, 那么得到积分不准确. 这可以通过使用一种称为 *预过滤重要性采样* 的技术进行改进, 此外, 这种方法使用更少的样本就可以得到收敛的积分.
+
+预过滤重要性采样使用多个环境图像, 这些图像采用的低通滤波越来越低. 这通常使用mipmap和盒式滤波实现, 非常高效. 根据样本重要性选择LOD, 即, 低概率样本使用更高的LOD索引(更多过滤).
+
+[[Krivanek08](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-krivanek08)]
+
+立方体贴图LOD通过以下方式确定:
+
+$$$$
+
+其中 K 为根据经验确定的常数, p 为BRDF的PDF, Ωs 为与样本关联的立体角, Ωp 为与立方体贴图中的纹素相关联的立体角.
+
+立方体贴图采样使用无缝三线性滤波. 对跨面的立方体贴图进行采样时, 使用OpenGL的无缝采样功能或任何其他能够避免/减少接缝的技术, 对保证采样正确非常重要.
+
+
 
 ### 9.3 选择BRDF采样的重要方向
 
-TODO
+为简单起见, 使用BRDF的 D 项作为PDF, 但PDF必须进行归一化, 使得半球上的积分为1:
+
+$$$$(129)
+
+因此, BRDF的PDF可以用方程 130 表示:
+
+$$$$
+
+sinθ项来自立体角微分 sin⁡θdϕdθ, 因为我们对球面进行积分. 我们独立地对 θ 和 ϕ 进行采样:
+
+$$$$
+
+对于各向同性的法线分布, 公式 p(ϕ) 是正确的.
+
+然后, 计算每个变量的累积分布函数(CDF):
+
+$$$$
+
+将 P(sϕ)和 P(sθ) 设置为随机变量 ζϕ 和 ζθ, 并分别求解 sϕ 和 sθ:
+
+$$$$
+
+因此, 给定均匀分布 (ζϕ,ζθ), 重要方向 l 定义为:
+
+$$$$
+
+
 
 ### 9.4 Hammersley序列
+
+```
+vec2f hammersley(uint i, float numSamples) {
+    uint bits = i;
+    bits = (bits << 16) | (bits >> 16);
+    bits = ((bits & 0x55555555) << 1) | ((bits & 0xAAAAAAAA) >> 1);
+    bits = ((bits & 0x33333333) << 2) | ((bits & 0xCCCCCCCC) >> 2);
+    bits = ((bits & 0x0F0F0F0F) << 4) | ((bits & 0xF0F0F0F0) >> 4);
+    bits = ((bits & 0x00FF00FF) << 8) | ((bits & 0xFF00FF00) >> 8);
+    return vec2f(i / numSamples, bits / exp2(32));
+}
+```
+
+Hammersley序列生成器的C ++实现
 
 
 
 ### 9.5 预计算L用于基于图像的光照
 
+LDFG 项仅依赖于n⋅v. 下面, 随意将法线设置为 n=[0,0,1], 并选择 v 满足 n⋅v. 向量 hi 为 DGGX(α) 重要方向样本 i .
 
+```
+float GDFG(float NoV, float NoL, float a) {
+    float a2 = a * a;
+    float GGXL = NoV * sqrt((-NoL * a2 + NoL) * NoL + a2);
+    float GGXV = NoL * sqrt((-NoV * a2 + NoV) * NoV + a2);
+    return (2 * NoL) / (GGXV + GGXL);
+}
+
+float2 DFG(float NoV, float a) {
+    float3 V;
+    V.x = sqrt(1.0f - NoV*NoV);
+    V.y = 0.0f;
+    V.z = NoV;
+
+    float2 r = 0.0f;
+    for (uint i = 0; i < sampleCount; i++) {
+        float2 Xi = hammersley(i, sampleCount);
+        float3 H = importanceSampleGGX(Xi, a, N);
+        float3 L = 2.0f * dot(V, H) * H - V;
+
+        float VoH = saturate(dot(V, H));
+        float NoL = saturate(L.z);
+        float NoH = saturate(H.z);
+
+        if (NoL > 0.0f) {
+            float G = GDFG(NoV, NoL, a);
+            float Gv = G * VoH / NoH;
+            float Fc = pow(1 - VoH, 5.0f);
+            r.x += Gv * (1 - Fc);
+            r.y += Gv * Fc;
+        }
+    }
+    return r * (1.0f / sampleCount);
+}
+```
+
+LDFG 项的C++实现
 
 ### 9.6 球谐函数
 
@@ -2010,9 +2349,529 @@ TODO
 |  yml   | 球谐函数基, 或SH基                     |
 |  Lml   | 定义在单位球上的 L(s)L(s) 函数的SH系数 |
 
-TODO
+#### 9.6.1 基函数
+
+单位球面上点的球面参数化:
 
 
+
+{x,y,z}={cosϕsinθ,sinϕsinθ,cosθ}(131)(131){x,y,z}={cos⁡ϕsin⁡θ,sin⁡ϕsin⁡θ,cos⁡θ}
+
+
+
+复球谐函数基由下式给出:
+
+
+
+Yml(θ,ϕ)=KmleimθP|m|l(cosθ),l∈N,−l<=m<=l(132)(132)Ylm(θ,ϕ)=KlmeimθPl|m|(cos⁡θ),l∈N,−l<=m<=l
+
+
+
+但我们只需要实数基:
+
+
+
+ym>0lym<0ly0l=2–√Kmlcos(mϕ)Pml(cosθ)=2–√Kmlsin(mϕ)P|m|l(cosθ)=K0lP0l(cosθ)ylm>0=2Klmcos⁡(mϕ)Plm(cos⁡θ)ylm<0=2Klmsin⁡(mϕ)Pl|m|(cos⁡θ)yl0=Kl0Pl0(cos⁡θ)
+
+
+
+归一化因子由下式给出:
+
+
+
+Kml=(2l+1)(l−|m|)!4π(l+|m|)!−−−−−−−−−−−−−−√(133)(133)Klm=(2l+1)(l−|m|)!4π(l+|m|)!
+
+
+
+连带勒让德多项式 P|m|lPl|m| 可以通过下式递归计算:
+
+
+
+P00(x)=1P01(x)=xPll(x)=(−1)l(2l−1)!!(1−x2)l2Pml(x)=(2l−1)xPml−1−(l+m−1)Pml−2l−m(134)(134)P00(x)=1P10(x)=xPll(x)=(−1)l(2l−1)!!(1−x2)l2Plm(x)=(2l−1)xPl−1m−(l+m−1)Pl−2ml−m
+
+
+
+计算 y|m|lyl|m| 需要先计算 P|m|l(z)Pl|m|(z). 使用方程 [134](https://jerkwin.github.io/filamentcn/Filament.md.html#mjx-eqn-shRecursions)134 中的递归关系很容易做到. 第三个递归可用于在[表 20](https://jerkwin.github.io/filamentcn/Filament.md.html#表_basisfunctions)中进行"对角移动", 即计算 y00y00, y11y11, y22y22 等. 然后, 第四个递归可用于垂直移动.
+
+| 波段指数 |        基函数 −l<=m<=l−l<=m<=l         |
+| :------: | :------------------------------------: |
+|  l=0l=0  |                 y00y00                 |
+|  l=1l=1  |         y−11y1−1 y01y10 y11y11         |
+|  l=2l=2  | y−22y2−2 y−12y2−1 y02y20 y12y21 y22y22 |
+
+**表 19:** 每个波段的基函数
+
+
+
+递归地计算三角项也很容易:
+
+
+
+CmSm{x,y,z}≡cos(mϕ)≡sin(mϕ)={cosϕsinθ,sinϕsinθ,cosθ}Cm≡cos⁡(mϕ)Sm≡sin⁡(mϕ){x,y,z}={cos⁡ϕsin⁡θ,sin⁡ϕsin⁡θ,cos⁡θ}
+
+
+
+使用和差化积公式:
+
+
+
+cos(mϕ+ϕ)sin(mϕ+ϕ)=cos(mϕ)cos(ϕ)−sin(mϕ)sin(ϕ)⇔Cm+1=(xCm−ySm)sin(θ)|m+1|=sin(mϕ)sin(ϕ)+cos(mϕ)sin(ϕ)⇔Sm+1=(xSm−yCm)sin(θ)|m+1|cos⁡(mϕ+ϕ)=cos⁡(mϕ)cos⁡(ϕ)−sin⁡(mϕ)sin⁡(ϕ)⇔Cm+1=(xCm−ySm)sin⁡(θ)|m+1|sin⁡(mϕ+ϕ)=sin⁡(mϕ)sin⁡(ϕ)+cos⁡(mϕ)sin⁡(ϕ)⇔Sm+1=(xSm−yCm)sin⁡(θ)|m+1|
+
+
+
+上面的方程有一个额外的项 sin(θ)−|m+1|sin⁡(θ)−|m+1|, 但我们可以通过乘以 Pll(z)Pll(z) 以及 sin(θ)|m+1|sin⁡(θ)|m+1|来补偿 P|m|l(z)Pl|m|(z) 递归中的项, 这大大简化了 [134](https://jerkwin.github.io/filamentcn/Filament.md.html#mjx-eqn-shRecursions)134 中的第三个方程, 因为 Pll(cosθ)sin(θ)−l=(−1)l(2l−1)!!Pll(cos⁡θ)sin⁡(θ)−l=(−1)l(2l−1)!!.
+
+[清单 50](https://jerkwin.github.io/filamentcn/Filament.md.html#清单_nonnormalizedshbasis)展示了用于计算非归一化SH基 yml(s)2√Kmlylm(s)2Klm 的C++代码:
+
+```
+static inline size_t SHindex(ssize_t m, size_t l) {
+    return l * (l + 1) + m;
+}
+
+void computeShBasis(
+        double* const SHb,
+        size_t numBands,
+        const vec3& s)
+{
+    // 单独处理 m=0, 因为它只有一个系数
+    double Pml_2 = 0;
+    double Pml_1 = 1;
+    SHb[0] =  Pml_1;
+    for (ssize_t l = 1; l < numBands; l++) {
+        double Pml = ((2 * l - 1) * Pml_1 * s.z - (l - 1) * Pml_2) / l;
+        Pml_2 = Pml_1;
+        Pml_1 = Pml;
+        SHb[SHindex(0, l)] = Pml;
+    }
+    double Pmm = 1;
+    for (ssize_t m = 1; m < numBands ; m++) {
+        Pmm = (1 - 2 * m) * Pmm;
+        double Pml_2 = Pmm;
+        double Pml_1 = (2 * m + 1)*Pmm*s.z;
+        // l == m
+        SHb[SHindex(-m, m)] = Pml_2;
+        SHb[SHindex( m, m)] = Pml_2;
+        if (m + 1 < numBands) {
+            // l == m+1
+            SHb[SHindex(-m, m + 1)] = Pml_1;
+            SHb[SHindex( m, m + 1)] = Pml_1;
+            for (ssize_t l = m + 2; l < numBands; l++) {
+                double Pml = ((2 * l - 1) * Pml_1 * s.z - (l + m - 1) * Pml_2)
+                        / (l - m);
+                Pml_2 = Pml_1;
+                Pml_1 = Pml;
+                SHb[SHindex(-m, l)] = Pml;
+                SHb[SHindex( m, l)] = Pml;
+            }
+        }
+    }
+    double Cm = s.x;
+    double Sm = s.y;
+    for (ssize_t m = 1; m <= numBands ; m++) {
+        for (ssize_t l = m; l < numBands ; l++) {
+            SHb[SHindex(-m, l)] *= Sm;
+            SHb[SHindex( m, l)] *= Cm;
+        }
+        double Cm1 = Cm * s.x - Sm * s.y;
+        double Sm1 = Sm * s.x + Cm * s.y;
+        Cm = Cm1;
+        Sm = Sm1;
+    }
+}
+```
+
+**清单 50:** 计算非归一化SH基的C++实现
+
+前三个波段归一化的SH基函数 $y^m_l(s)$:
+
+|  Band  |     m=−2m=−2      |      m=−1m=−1       |              m=0m=0               |       m=1m=1        |     m=2m=2      |
+| :----: | :---------------: | :-----------------: | :-------------------------------: | :-----------------: | :-------------: |
+| l=0l=0 |                   |                     |            121π−−√121π            |                     |                 |
+| l=1l=1 |                   |   −123π−−√y−123πy   |           123π−−√z123πz           |   −123π−−√x−123πx   |                 |
+| l=2l=2 | 1215π−−√xy1215πxy | −1215π−−√yz−1215πyz | 145π−−√(2z2−x2−y2)145π(2z2−x2−y2) | −1215π−−√xz−1215πxz | 1415π−−√(x2−y2) |
+
+**表 20:** 每个波段归一化的基函数
+
+#### 9.6.2 分解和重建
+
+定义在球面上的函数 L(S)L(S) 可以投影到SH基上, 如下所示:
+
+
+
+Lml=∫ΩL(s)yml(s)dsLml=∫πθ=0∫2πϕ=0L(θ,ϕ)yml(θ,ϕ)sinθdθdϕ(135)(135)Llm=∫ΩL(s)ylm(s)dsLlm=∫θ=0π∫ϕ=02πL(θ,ϕ)ylm(θ,ϕ)sin⁡θdθdϕ
+
+
+
+注意, 每个 LmlLlm 为3个值的向量, 每个RGB颜色通道一个.
+
+SH系数的逆变换, 或重建, 或渲染由下式给出:
+
+
+
+L^(s)=∑l∑m=−llLmlyml(s)(136)
+
+#### 9.6.3 ⟨cosθ⟩的分解
+
+由于 ⟨cosθ⟩⟨cos⁡θ⟩ 与 ϕϕ 无关(不依赖方位角), 因此积分可简化为:
+
+
+
+C0lC0lCml=2π∫π0⟨cosθ⟩y0l(θ)sinθdθ=2πKml∫π20P0l(cosθ)cosθsinθdθ=0,m!=0Cl0=2π∫0π⟨cos⁡θ⟩yl0(θ)sin⁡θdθCl0=2πKlm∫0π2Pl0(cos⁡θ)cos⁡θsin⁡θdθClm=0,m!=0
+
+
+
+在[[Ramamoorthi01](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-ramamoorthi01)]中给出了积分的解析解:
+
+
+
+C1CoddCl,even=π3−−√=0=2π2l+14π−−−−−−√(−1)l2−1(l+2)(l−1)l!2l(l!2)2C1=π3Codd=0Cl,even=2π2l+14π(−1)l2−1(l+2)(l−1)l!2l(l!2)2
+
+
+
+前几个系数为:
+
+
+
+C0C1C2C3C4=+0.88623=+1.02333=+0.49542=+0.00000=−0.11078C0=+0.88623C1=+1.02333C2=+0.49542C3=+0.00000C4=−0.11078
+
+
+
+合理地近似 ⟨cosθ⟩⟨cos⁡θ⟩ 只需要很少几个系数, 如[图 95](https://jerkwin.github.io/filamentcn/Filament.md.html#图_shcosthetaapprox)所示.
+
+
+
+[![img](https://jerkwin.github.io/filamentcn/images/chart_sh_cos_thera_approx.png)](https://jerkwin.github.io/filamentcn/images/chart_sh_cos_thera_approx.png)
+
+**图 95:** 用SH系数近似 cosθ
+
+#### 9.6.4 卷积
+
+具有圆对称性的核 hh 的卷积可以直接在SH空间中轻松应用:
+
+
+
+(h∗f)ml=4π2l+1−−−−−−√h0l(s)fml(s)(137)(137)(h∗f)lm=4π2l+1hl0(s)flm(s)
+
+
+
+方便地, 4π2l+1−−−−√=1K0l4π2l+1=1Kl0, 所以在实践中我们将 ClCl 预先乘以1K0l1Kl0, 得到一个更简单的表达式:
+
+
+
+C^l,even=2π(−1)l2−1(l+2)(l−1)l!2l(l!2)2C^1=2π3
+
+以下是计算 $C^l$ 的C++代码:
+
+```
+static double factorial(size_t n, size_t d = 1);
+
+// < cos(theta) > 预先乘以1/K(0,l)的SH系数
+double computeTruncatedCosSh(size_t l) {
+    if (l == 0) {
+        return M_PI;
+    } else if (l == 1) {
+        return 2 * M_PI / 3;
+    } else if (l & 1) {
+        return 0;
+    }
+    const size_t l_2 = l / 2;
+    double A0 = ((l_2 & 1) ?1.0 : -1.0) / ((l + 2) * (l - 1));
+    double A1 = factorial(l, l_2) / (factorial(l_2) * (1 << l));
+    return 2 * M_PI * A0 * A1;
+}
+
+// 返回 n!/ d!
+double factorial(size_t n, size_t d ) {
+   d = std::max(size_t(1), d);
+   n = std::max(size_t(1), n);
+   double r = 1.0;
+   if (n == d) {
+       // 省略
+   } else if (n > d) {
+       for ( ; n>d ; n--) {
+           r *= n;
+       }
+   } else {
+       for ( ; d>n ; d--) {
+           r *= d;
+       }
+       r = 1.0 / r;
+   }
+   return r;
+}
+```
+
+
+
+### 9.7 Mitsuba的示例验证场景
+
+
+
+### 9.8 使用锥素进行灯光指定
+
+将灯光指定给锥素时, 可以使用两个计算着色器在GPU上实现. 第一个, 如清单 51所示, 在SSBO中创建锥素数据(4个平面+每个锥素的最小Z和最大Z), 并且只需运行一次. 着色器需要以下uniforms值:
+
+投影矩阵: 用于渲染场景的投影矩阵(视图空间到剪切空间的变换).
+
+逆投影矩阵: 用于渲染场景的投影矩阵的逆矩阵(剪切空间到视图空间的变换).
+
+深度参数: $−log_2(\frac{z_{near}}{z_{far}})\frac{1}{maxSlices−1}$, 深度切片的最大数目, Z近和Z远.
+
+剪切空间大小: $\frac{Fx×Fr}{w}×2$, 其中 Fx 为X轴上图块的数目, Fr 为图块的分辨率, 以像素为单位, w为渲染目标的宽度, 以像素为单位.
+
+```
+#version 310 es
+
+precision highp float;
+precision highp int;
+
+#define FROXEL_RESOLUTION 80u
+
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+
+layout(location = 0) uniform mat4 projectionMatrix;
+layout(location = 1) uniform mat4 projectionInverseMatrix;
+layout(location = 2) uniform vec4 depthParams; // index scale, index bias, near, far
+layout(location = 3) uniform float clipSpaceSize;
+
+struct Froxel {
+    // 注意: 平面应存储在 vec4[4] 中,
+    // 但Adreno着色器编译器有一个bug,
+    // 可以导致无法在循环内正确地读取数据
+    vec4 plane0;
+    vec4 plane1;
+    vec4 plane2;
+    vec4 plane3;
+    vec2 minMaxZ;
+};
+
+layout(binding = 0, std140) writeonly restrict buffer FroxelBuffer {
+    Froxel data[];
+} froxels;
+
+shared vec4 corners[4];
+shared vec2 minMaxZ;
+
+vec4 projectionToView(vec4 p) {
+    p = projectionInverseMatrix * p;
+    return p / p.w;
+}
+
+vec4 createPlane(vec4 b, vec4 c) {
+    // 标准平面方程, (0,0,0)
+    return vec4(normalize(cross(c.xyz, b.xyz)), 1.0);
+}
+
+void main() {
+    uint index = gl_WorkGroupID.x + gl_WorkGroupID.y * gl_NumWorkGroups.x +
+            gl_WorkGroupID.z * gl_NumWorkGroups.x * gl_NumWorkGroups.y;
+
+    if (gl_LocalInvocationIndex == 0u) {
+        // 首先平铺屏幕并为当前贴片构建视锥
+        vec2 renderTargetSize = vec2(FROXEL_RESOLUTION * gl_NumWorkGroups.xy);
+        vec2 frustumMin = vec2(FROXEL_RESOLUTION * gl_WorkGroupID.xy);
+        vec2 frustumMax = vec2(FROXEL_RESOLUTION * (gl_WorkGroupID.xy + 1u));
+
+        corners[0] = vec4(
+            frustumMin.x / renderTargetSize.x * clipSpaceSize - 1.0,
+            (renderTargetSize.y - frustumMin.y) / renderTargetSize.y
+			    * clipSpaceSize - 1.0,
+            1.0,
+            1.0
+        );
+        corners[1] = vec4(
+            frustumMax.x / renderTargetSize.x * clipSpaceSize - 1.0,
+            (renderTargetSize.y - frustumMin.y) / renderTargetSize.y
+			    * clipSpaceSize - 1.0,
+            1.0,
+            1.0
+        );
+        corners[2] = vec4(
+            frustumMax.x / renderTargetSize.x * clipSpaceSize - 1.0,
+            (renderTargetSize.y - frustumMax.y) / renderTargetSize.y
+			    * clipSpaceSize - 1.0,
+            1.0,
+            1.0
+        );
+        corners[3] = vec4(
+            frustumMin.x / renderTargetSize.x * clipSpaceSize - 1.0,
+            (renderTargetSize.y - frustumMax.y) / renderTargetSize.y
+			    * clipSpaceSize - 1.0,
+            1.0,
+            1.0
+        );
+
+        uint froxelSlice = gl_WorkGroupID.z;
+        minMaxZ = vec2(0.0, 0.0);
+        if (froxelSlice > 0u) {
+            minMaxZ.x = exp2((float(froxelSlice) - depthParams.y) * depthParams.x)
+                    * depthParams.w;
+        }
+        minMaxZ.y = exp2((float(froxelSlice + 1u) - depthParams.y) * depthParams.x)
+                * depthParams.w;
+    }
+
+    if (gl_LocalInvocationIndex == 0u) {
+        vec4 frustum[4];
+        frustum[0] = projectionToView(corners[0]);
+        frustum[1] = projectionToView(corners[1]);
+        frustum[2] = projectionToView(corners[2]);
+        frustum[3] = projectionToView(corners[3]);
+
+        froxels.data[index].plane0 = createPlane(frustum[0], frustum[1]);
+        froxels.data[index].plane1 = createPlane(frustum[1], frustum[2]);
+        froxels.data[index].plane2 = createPlane(frustum[2], frustum[3]);
+        froxels.data[index].plane3 = createPlane(frustum[3], frustum[0]);
+        froxels.data[index].minMaxZ = minMaxZ;
+    }
+}
+```
+
+**清单 51:** 锥素数据生成的GLSL实现(计算着色器)
+
+清单 52所示的第二个计算着色器处理每一帧(如果相机和/或灯光发生变化), 并将所有灯光指定到各自的锥素. 这个着色器只依赖几个uniforms值(点光源/聚光灯和视图矩阵的数目)和四个SSBO:
+
+灯光索引缓冲区: 对于每个锥素, 影响该锥素的所有灯光的索引. 首先写入点光源的索引, 如果剩余空间足够, 也会写入聚光灯的索引. 值0×7fffffffu将点光源和聚光灯分开, 和/或标记锥素灯光列表的末尾. 每个锥素都有最大数量的灯光(点光源+聚光灯).
+
+点光源缓冲区: 描述场景中点光源的结构数组.
+
+聚光灯缓冲区: 描述场景中聚光灯的结构数组.
+
+锥素缓冲区: 以平面表示的锥素列表, 由前一个计算着色器创建.
+
+```
+#version 310 es
+precision highp float;
+precision highp int;
+
+#define LIGHT_BUFFER_SENTINEL 0x7fffffffu
+#define MAX_FROXEL_LIGHT_COUNT 32u
+
+#define THREADS_PER_FROXEL_X 8u
+#define THREADS_PER_FROXEL_Y 8u
+#define THREADS_PER_FROXEL_Z 1u
+#define THREADS_PER_FROXEL (THREADS_PER_FROXEL_X * \
+        THREADS_PER_FROXEL_Y * THREADS_PER_FROXEL_Z)
+
+layout(local_size_x = THREADS_PER_FROXEL_X,
+       local_size_y = THREADS_PER_FROXEL_Y,
+       local_size_z = THREADS_PER_FROXEL_Z) in;
+
+// x = 点光源, y = 聚光灯
+layout(location = 0) uniform uvec2 totalLightCount;
+layout(location = 1) uniform mat4 viewMatrix;
+
+layout(binding = 0, packed) writeonly restrict buffer LightIndexBuffer {
+    uint index[];
+} lightIndexBuffer;
+
+struct PointLight {
+    vec4 positionFalloff; // x, y, z, falloff
+    vec4 colorIntensity;  // r, g, b, intensity
+    vec4 directionIES;    // dir x, dir y, dir z, IES profile index
+};
+
+layout(binding = 1, std140) readonly restrict buffer PointLightBuffer {
+    PointLight lights[];
+} pointLights;
+
+struct SpotLight {
+    vec4 positionFalloff; // x, y, z, falloff
+    vec4 colorIntensity;  // r, g, b, intensity
+    vec4 directionIES;    // dir x, dir y, dir z, IES profile index
+    vec4 angle;           // angle scale, angle offset, unused, unused
+};
+
+layout(binding = 2, std140) readonly restrict buffer SpotLightBuffer {
+    SpotLight lights[];
+} spotLights;
+
+struct Froxel {
+    // 注意: 平面应存储在 vec4[4] 中,
+    // 但Adreno着色器编译器有一个bug,
+    // 可以导致无法在循环内正确地读取数据
+    vec4 plane0;
+    vec4 plane1;
+    vec4 plane2;
+    vec4 plane3;
+    vec2 minMaxZ;
+};
+
+layout(binding = 3, std140) readonly restrict buffer FroxelBuffer {
+    Froxel data[];
+} froxels;
+
+shared uint groupLightCounter;
+shared uint groupLightIndexBuffer[MAX_FROXEL_LIGHT_COUNT];
+
+float signedDistanceFromPlane(vec4 p, vec4 plane) {
+    // plane.w == 0.0, 简化计算
+    return dot(plane.xyz, p.xyz);
+}
+
+void synchronize() {
+    memoryBarrierShared();
+    barrier();
+}
+
+void main() {
+    if (gl_LocalInvocationIndex == 0u) {
+        groupLightCounter = 0u;
+    }
+    memoryBarrierShared();
+
+    uint froxelIndex = gl_WorkGroupID.x + gl_WorkGroupID.y * gl_NumWorkGroups.x +
+            gl_WorkGroupID.z * gl_NumWorkGroups.x * gl_NumWorkGroups.y;
+    Froxel current = froxels.data[froxelIndex];
+
+    uint offset = gl_LocalInvocationID.x +
+	        gl_LocalInvocationID.y * THREADS_PER_FROXEL_X;
+    for (uint i = 0u; i < totalLightCount.x &&
+		    groupLightCounter < MAX_FROXEL_LIGHT_COUNT &&
+            offset + i < totalLightCount.x; i += THREADS_PER_FROXEL) {
+
+        uint currentLight = offset + i;
+
+        vec4 center = pointLights.lights[currentLight].positionFalloff;
+        center.xyz = (viewMatrix * vec4(center.xyz, 1.0)).xyz;
+        float r = inversesqrt(center.w);
+
+        if (-center.z + r > current.minMaxZ.x &&
+                -center.z - r <= current.minMaxZ.y) {
+            if (signedDistanceFromPlane(center, current.plane0) < r &&
+                signedDistanceFromPlane(center, current.plane1) < r &&
+                signedDistanceFromPlane(center, current.plane2) < r &&
+                signedDistanceFromPlane(center, current.plane3) < r) {
+
+                uint index = atomicAdd(groupLightCounter, 1u);
+                groupLightIndexBuffer[index] = currentLight;
+            }
+        }
+    }
+
+    synchronize();
+
+    uint pointLightCount = groupLightCounter;
+    offset = froxelIndex * MAX_FROXEL_LIGHT_COUNT;
+
+    for (uint i = gl_LocalInvocationIndex; i < pointLightCount;
+            i += THREADS_PER_FROXEL) {
+        lightIndexBuffer.index[offset + i] = groupLightIndexBuffer[i];
+    }
+
+    if (gl_LocalInvocationIndex == 0u) {
+        if (pointLightCount < MAX_FROXEL_LIGHT_COUNT) {
+            lightIndexBuffer.index[offset + pointLightCount] = LIGHT_BUFFER_SENTINEL;
+        }
+    }
+}
+```
+
+**清单 52:** 灯光到锥素的GLSL实现(计算着色器)
+
+## 10 修订
+
+...
 
 ## 11 参考文献
 

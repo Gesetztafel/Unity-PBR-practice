@@ -14,14 +14,14 @@ struct ShadingParameters
 #if defined(CLEAR_COAT)
     float3  clearCoatNormalWS;
 #endif
-// #if defined(BENT_NORMAL)
-//     float3  bentNormalWS;
-// #endif
+#if defined(BENT_NORMAL)
+    float3  bentNormalWS;
+#endif
 
 #if defined(VERTEXLIGHT_ON)
 	float3 vertexLightColor;
 #endif
-
+//No LightMap
 // #if defined(LIGHTMAP_ON) || ADDITIONAL_MASKED_DIRECTIONAL_SHADOWS
 // 	float2 lightmapUV;
 // #endif
