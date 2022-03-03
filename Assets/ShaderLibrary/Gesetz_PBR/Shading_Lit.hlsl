@@ -1,12 +1,10 @@
-#ifndef GESETZ_LIGHTING_LIT_INCLUDED
-#define GESETZ_LIGHTING_LIT_INCLUDED
+#ifndef GESETZ_SHADING_LIT_INCLUDED
+#define GESETZ_SHADING_LIT_INCLUDED
 
 #include "Lighting_Common.hlsl"
 #include "Shading_Config.hlsl"
-#include "Materials_Input.hlsl"
-//#include "Packages/com.unity.render-pipelines.core/ShaderLibrary/CommonMaterial.hlsl"
 #include "Common_Material.hlsl"
-#include "Common_Shading.hlsl"
+#include "Shading_Parameters.hlsl"
 
 //Lighting
 // float computeDiffuseAlpha(float a) {
@@ -218,7 +216,7 @@ float normalFiltering(float perceptualRoughness, const float3 worldNormal)
 
 
 void getPixelParams(const MaterialInputs material,out PixelParams pixel,const ShadingParameters shadingParameters) {
-	float NdotV=abs(dot(shadingParameters.normalWS,shadingParameters.viewDir));
+	float NdotV=clampNdotV(dot(shadingParameters.normalWS,shadingParameters.viewDir));
 	float3 geometricNormal=shadingParameters.geometricNormalWS;
 
 	// getCommonPixelParams(material,pixel);
@@ -360,22 +358,20 @@ void getPixelParams(const MaterialInputs material,out PixelParams pixel,const Sh
 #endif
     	
 	// getAnisotropyPixelParams(material,pixel,shadingParameters);
-	float3x3 tangentToWorld=shadingParameters.tangentToWorld;
-
 #if defined(ANISOTROPY)
     float3 direction = material.anisotropyDirection;
     pixel.anisotropy = material.anisotropy;
 
 	//glsl tangentToWorld*direction
-    pixel.anisotropicT = normalize(mul(tangentToWorld,direction));	
+    pixel.anisotropicT = normalize(mul(shadingParameters.tangentToWorld,direction));	
     pixel.anisotropicB = normalize(cross(geometricNormal, pixel.anisotropicT));
 #endif
 	
 	// getEnergyCompensationPixelParams(material,pixel,NdotV);
 	//[Lazarov 13] 
-	pixel.DFG=float3(Prefiltered_DFG_Approx(pixel.perceptualRoughness,NdotV),1.0);
+	// pixel.DFG=float3(Prefiltered_DFG_Approx(pixel.perceptualRoughness,NdotV),1.0);
 	//DFG LUT 
-	// pixel.DFG=Prefiltered_DFG(pixel.perceptualRoughness,NdotV);
+	pixel.DFG=Prefiltered_DFG_CLOTH_LUT(pixel.perceptualRoughness,NdotV);
 	
 // #if !defined(SHADING_MODEL_CLOTH)
 //     // Energy compensation for multiple scattering in a microfacet model
@@ -384,6 +380,7 @@ void getPixelParams(const MaterialInputs material,out PixelParams pixel,const Sh
 // #else
     pixel.energyCompensation = float3(1.0,1.0,1.0);
 // #endif
+	
 #if !defined(SHADING_MODEL_CLOTH)
 #if defined(SHEEN_COLOR)
     pixel.sheenDFG = Prefiltered_DFG_CLOTH_LUT(pixel.sheenPerceptualRoughness,NdotV).z;

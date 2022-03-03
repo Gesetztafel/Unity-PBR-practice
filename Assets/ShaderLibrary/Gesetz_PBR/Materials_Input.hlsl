@@ -58,7 +58,7 @@ struct MaterialInputs
 
  #if defined(CLEAR_COAT)
      float clearCoat;
-    float clearCoatRoughness;
+     float clearCoatRoughness;
  #endif
  
  #if defined(ANISOTROPY)
@@ -66,10 +66,12 @@ struct MaterialInputs
     float3  anisotropyDirection;
 #endif
 	
-#if defined(SHADING_MODEL_SUBSURFACE) || defined(REFRACTION)
-    float thickness;
-#endif
+// #if defined(SHADING_MODEL_SUBSURFACE)|| defined(REFRACTION)
+//     float thickness;
+// #endif
+
 #if defined(SHADING_MODEL_SUBSURFACE)
+	float thickness;
     float subsurfacePower;
     float3  subsurfaceColor;
 #endif
@@ -83,14 +85,14 @@ struct MaterialInputs
 
 
 // #if defined(NORMAL)
-//     float3  normal;
+// 	float3  normal;
 // #endif
-// #if defined(BENT_NORMAL)
-//     float3  bentNormal;
-// #endif
-// #if defined(CLEAR_COAT) && defined(CLEAR_COAT_NORMAL)
-//     float3  clearCoatNormal;
-// #endif
+#if defined(BENT_NORMAL)
+    float3  bentNormal;
+#endif
+#if defined(CLEAR_COAT) && defined(CLEAR_COAT_NORMAL)
+    float3  clearCoatNormal;
+#endif
 
 // #if defined(POST_LIGHTING_COLOR)
 //     float4  postLightingColor;
@@ -147,10 +149,11 @@ void InitMaterialInputs(out MaterialInputs material)
      material.anisotropyDirection = float3(1.0, 0.0, 0.0);
  #endif
  
- #if defined(SHADING_MODEL_SUBSURFACE) || defined(REFRACTION)
-     material.thickness = 0.5;
- #endif
+ // #if defined(SHADING_MODEL_SUBSURFACE)|| defined(REFRACTION)
+ //     material.thickness = 0.5;
+ // #endif
  #if defined(SHADING_MODEL_SUBSURFACE)
+     material.thickness = 0.5;
      material.subsurfacePower = 12.234;
      material.subsurfaceColor = float3(1.0,1.0,1.0);
  #endif
@@ -164,15 +167,15 @@ void InitMaterialInputs(out MaterialInputs material)
 
 
  // #if defined(NORMAL)
- //     material.normal = float3(0.0, 0.0, 1.0);
+ //    material.normal = float3(0.0, 0.0, 1.0);
  // #endif
- // #if defined(BENT_NORMAL)
- //     material.bentNormal = float3(0.0, 0.0, 1.0);
- // #endif
-
- // #if defined(CLEAR_COAT) && defined(CLEAR_COAT_NORMAL)
- //     material.clearCoatNormal = float3(0.0, 0.0, 1.0);
- // #endif
+ #if defined(BENT_NORMAL)
+     material.bentNormal = float3(0.0, 0.0, 1.0);
+ #endif
+ 
+ #if defined(CLEAR_COAT) && defined(CLEAR_COAT_NORMAL)
+     material.clearCoatNormal = float3(0.0, 0.0, 1.0);
+ #endif
 
  // #if defined(POST_LIGHTING_COLOR)
  //     material.postLightingColor = float4(0.0,0.0,0.0,0.0);
@@ -242,11 +245,17 @@ float GetClearCoatRoughness(){
 sampler2D _ClearCoatNormal;
 float3 GetClearCoatNormalTS(Interpolators i)
 {
-	float3 normal=float3(0.0,0.0,1.0);
 #if defined(CLEAR_COAT_NORMAL)
 	normal=tex2D(_ClearCoat_NormalMap, UV_FUNCTION(i).xy);
 #endif
-	return normal;
+}
+
+sampler2D _BentNormalMap;
+float3 GetBentNormalTS(Interpolators i)
+{
+#if defined(BENT_NORMAL)
+	normal=tex2D(_BentNormalMap, UV_FUNCTION(i).xy);
+#endif
 }
 
 float3 _SheenColor;
@@ -281,7 +290,7 @@ float GetThickness()
 }
 
 
-void prepareMaterial(inout MaterialInputs material,Interpolators i)
+void getMaterial(inout MaterialInputs material,Interpolators i)
 {
 	//Standard
 	material.baseColor=float4(GetAlbedo(i),GetAlpha(i));
@@ -311,10 +320,11 @@ void prepareMaterial(inout MaterialInputs material,Interpolators i)
      material.anisotropyDirection = GetAnisotropyDirection(i);
  #endif
 
-#if defined(SHADING_MODEL_SUBSURFACE) || defined(REFRACTION)
-    material.thickness=GetThickness();
-#endif
+// #if defined(SHADING_MODEL_SUBSURFACE) || defined(REFRACTION)
+//     material.thickness=GetThickness();
+// #endif
 #if defined(SHADING_MODEL_SUBSURFACE)
+    material.thickness=GetThickness();
     material.subsurfacePower=GetSubSurfacePower();
     material.subsurfaceColor=GetSubSurfaceColor();
 #endif
@@ -327,10 +337,7 @@ void prepareMaterial(inout MaterialInputs material,Interpolators i)
 #endif
 
 
-
+	
 }
-
-
-
 
 #endif

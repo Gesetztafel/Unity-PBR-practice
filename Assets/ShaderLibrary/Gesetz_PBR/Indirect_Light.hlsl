@@ -395,13 +395,7 @@ float3 specualrDFG(const PixelParams pixel)
 #if defined(SHADING_MODEL_CLOTH)
     return pixel.F0 * pixel.DFG.z;
 #else
-	//GLSL-mix(x,y,a) return x*(1-a)+y*a
-	// return mix(pixel.dfg.xxx, pixel.dfg.yyy, pixel.f0);
-	//HLSL-lerp(x,y,s) x*(1-s)+y*s
-    // return lerp(pixel.DFG.xxx, pixel.DFG.yyy, pixel.F0);
     return lerp(pixel.DFG.yyy, pixel.DFG.xxx, pixel.F0);
-	// float2 env=pixel.DFG.xy;
-	// float3 specualrColor=F0*env.x+F90*env.y;
 #endif
 }
 
@@ -769,7 +763,6 @@ void evaluateIBL(const MaterialInputs material,const PixelParams pixel,const Sha
      // }
 // #endif
 
-	//
      float3 specularColor = specualrDFG(pixel);
      float3 r = getReflectedVector(pixel, shadingparameters.normalWS,shadingparameters.viewDir,shadingparameters.reflected);
      Fr = specularColor*prefilteredRadiance(r, pixel.roughness,shadingparameters.positionWS);

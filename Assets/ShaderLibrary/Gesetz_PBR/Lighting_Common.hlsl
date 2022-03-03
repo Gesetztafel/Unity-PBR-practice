@@ -97,10 +97,11 @@ struct PixelParams
     float anisotropy;
 #endif
 	
-#if defined(SHADING_MODE_SUBSURFACE)||defined(REFRACTION)
-    float thickness;
-#endif
+// #if defined(SHADING_MODE_SUBSURFACE)||defined(REFRACTION)
+//     float thickness;
+// #endif
 #if defined(SHADING_MODEL_SUBSURFACE)
+    float thickness;
     float3  subsurfaceColor;
     float subsurfacePower;
 #endif

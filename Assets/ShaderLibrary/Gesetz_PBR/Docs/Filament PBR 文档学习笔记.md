@@ -2202,7 +2202,7 @@ $$clusterToZ(i≥1,sn,f,m)=2^{(i−m)\frac{-log_2(\frac{sn}{f})}{m-1}}$$(121)
 
 在离散区域中, 积分可以使用方程 124 中定义的采样进行近似.
 
-$$$$(124)
+$$L_{out}(n,v,\Theta) \equiv \frac{1}{N} \sum_{i}^{N} f(l_{i}^{uniform},v,\Theta) L_{\perp}(l_i) \left< n \cdot l_i^{uniform} \right>$$(124)
 
 不幸的是, 计算这个积分需要的采样过多. 通常使用的一种技术是更频繁地选择更"重要"的采样, 这称为 *重要性采样*. 
 
@@ -2210,7 +2210,7 @@ $$$$(124)
 
 使用重要性采样计算 Lout(n,v,Θ)的方法在方程125 中给出
 
-$$$$(125)
+$$L_{out}(n,v,\Theta) \equiv \frac{1}{N} \sum_{i}^{N} \frac{f(l_{i},v,\Theta)}{p(l_i,v,\Theta)} L_{\perp}(l_i) \left< n \cdot l_i \right>$$(125)
 
 在方程 125 中, p 为 *重要性采样* li 分布的概率密度函数(PDF). 这些样本依赖于 hi, v 和 α. PDF的定义见方程 127.
 
@@ -2218,17 +2218,17 @@ $$$$(125)
 
 hi 由我们选择的分布给出,*重要方向样本* li 为 v 绕 hi 的反射, 因此其PDF与 hi **不同**. 经变换后, 一个分布的PDF由下式给出:
 
-$$$$(126)
+$$p(T_r(x)) = p(x) |J(T_r)|$$(126)
 
 其中 |J(Tr)|为变换的雅可比行列式. 在我们的例子中, 考虑从 hi 到 li 的变换, 其雅可比行列式在 127 中给出.
 
-$$$$(127)
+$$p(l,v,\Theta) = D(h,\alpha) \left<n\cdot h \right> |J_{h \rightarrow l}| \\|J_{h \rightarrow l}| = \frac{1}{4 \left<v\cdot h\right>}$$(127)
 
 #### 9.2.1 选择重要方向
 
 详细信息请参阅节9.3 给定均匀分布 (ζϕ,ζθ)(, 重要方向 ll 由方程 128 定义.
 
-$$$$(128)
+$$\phi = 2 \pi \zeta_{\phi} \\\theta = \cos^{-1} \sqrt{\frac{1 - \zeta_{\theta}}{(\alpha^2 - 1)\zeta_{\theta}+1}} \\l = \{ \cos \phi \sin \theta, \sin \phi \sin \theta, \cos \theta \}$$(128)
 
 通常, 使用Hammersley均匀分布算法选择 (ζϕ,ζθ)(ζϕ,ζθ), 具体细节见节 9.4
 
@@ -2242,7 +2242,7 @@ $$$$(128)
 
 立方体贴图LOD通过以下方式确定:
 
-$$$$
+$$lod &= \log_4 \left( K\frac{\Omega_s}{\Omega_p} \right) \\K &= 4.0 \\\Omega_s &= \frac{1}{N \cdot p(l_i)} \\\Omega_p &\approx \frac{4\pi}{6 \cdot \text{width} \cdot \text{height} }$$
 
 其中 K 为根据经验确定的常数, p 为BRDF的PDF, Ωs 为与样本关联的立体角, Ωp 为与立方体贴图中的纹素相关联的立体角.
 
@@ -2254,29 +2254,29 @@ $$$$
 
 为简单起见, 使用BRDF的 D 项作为PDF, 但PDF必须进行归一化, 使得半球上的积分为1:
 
-$$$$(129)
+$$\int_{\Omega}p(m)dm = 1 \\\int_{\Omega}D(m)(n \cdot m)dm = 1 \\\int_{\phi=0}^{2\pi}\int_{\theta=0}^{\frac{\pi}{2}}D(\theta,\phi) \cos \theta \sin \theta d\theta d\phi = 1 \\$$(129)
 
 因此, BRDF的PDF可以用方程 130 表示:
 
-$$$$
+$$p(\theta,\phi) = \frac{\alpha^2}{\pi(\cos^2\theta (\alpha^2-1) + 1)^2} \cos\theta \sin\theta$$
 
 sinθ项来自立体角微分 sin⁡θdϕdθ, 因为我们对球面进行积分. 我们独立地对 θ 和 ϕ 进行采样:
 
-$$$$
+$$p(\theta) &= \int_0^{2\pi} p(\theta,\phi) d\phi = \frac{2\alpha^2}{(\cos^2\theta (\alpha^2-1) + 1)^2} \cos\theta \sin\theta \\p(\phi) &= \frac{p(\theta,\phi)}{p(\phi)} = \frac{1}{2\pi}$$
 
 对于各向同性的法线分布, 公式 p(ϕ) 是正确的.
 
 然后, 计算每个变量的累积分布函数(CDF):
 
-$$$$
+$$P(s_{\phi}) &= \int_{0}^{s_{\phi}} p(\phi) d\phi = \frac{s_{\phi}}{2\pi} \\P(s_{\theta}) &= \int_{0}^{s_{\theta}} p(\theta) d\theta = 2 \alpha^2 \left( \frac{1}{(2\alpha^4-4\alpha^2+2) \cos s_{\theta}^2 + 2\alpha^2 - 2} - \frac{1}{2\alpha^4-2\alpha^2} \right)$$
 
 将 P(sϕ)和 P(sθ) 设置为随机变量 ζϕ 和 ζθ, 并分别求解 sϕ 和 sθ:
 
-$$$$
+$$P(s_{\phi}) &= \zeta_{\phi} \rightarrow s_{\phi} = 2\pi\zeta_{\phi} \\P(s_{\theta}) &= \zeta_{\theta} \rightarrow s_{\theta} = \cos^{-1} \sqrt{\frac{1-\zeta_{\theta}}{(\alpha^2-1)\zeta_{\theta}+1}}$$
 
 因此, 给定均匀分布 (ζϕ,ζθ), 重要方向 l 定义为:
 
-$$$$
+$$\phi &= 2\pi\zeta_{\phi} \\\theta &= \cos^{-1} \sqrt{\frac{1-\zeta_{\theta}}{(\alpha^2-1)\zeta_{\theta}+1}} \\l &= \{ \cos\phi \sin\theta,\sin\phi \sin\theta,\cos\theta \}$$
 
 
 
@@ -2353,75 +2353,45 @@ LDFG 项的C++实现
 
 单位球面上点的球面参数化:
 
-
-
-{x,y,z}={cosϕsinθ,sinϕsinθ,cosθ}(131)(131){x,y,z}={cos⁡ϕsin⁡θ,sin⁡ϕsin⁡θ,cos⁡θ}
-
-
+$$\{ x, y, z \} = \{ \cos \phi \sin \theta, \sin \phi \sin \theta, \cos \theta \}$$
 
 复球谐函数基由下式给出:
 
-
-
-Yml(θ,ϕ)=KmleimθP|m|l(cosθ),l∈N,−l<=m<=l(132)(132)Ylm(θ,ϕ)=KlmeimθPl|m|(cos⁡θ),l∈N,−l<=m<=l
-
-
+$$Y^m_l(\theta, \phi) = K^m_l e^{im\theta} P^{|m|}_l(\cos \theta), l \in N, -l <= m <= l$$
 
 但我们只需要实数基:
 
-
-
-ym>0lym<0ly0l=2–√Kmlcos(mϕ)Pml(cosθ)=2–√Kmlsin(mϕ)P|m|l(cosθ)=K0lP0l(cosθ)ylm>0=2Klmcos⁡(mϕ)Plm(cos⁡θ)ylm<0=2Klmsin⁡(mϕ)Pl|m|(cos⁡θ)yl0=Kl0Pl0(cos⁡θ)
-
-
+$$y^{m > 0}_l &= \sqrt{2} K^m_l \cos(m \phi) P^m_l(\cos \theta) \\y^{m < 0}_l &= \sqrt{2} K^m_l \sin(m \phi) P^{|m|}_l(\cos \theta) \\y^0_l &= K^0_l P^0_l(\cos \theta)$$
 
 归一化因子由下式给出:
 
+$$K^m_l = \sqrt{\frac{(2l + 1)(l - |m|)!}{4 \pi (l + |m|)!}}$$
 
+连带勒让德多项式 P|m|l 可以通过下式递归计算:
 
-Kml=(2l+1)(l−|m|)!4π(l+|m|)!−−−−−−−−−−−−−−√(133)(133)Klm=(2l+1)(l−|m|)!4π(l+|m|)!
+$$P^0_0(x) = 1 \\P^0_1(x) = x \\P^l_l(x) = (-1)^l (2l - 1)!!(1 - x^2)^{\frac{l}{2}} \\P^m_l(x) = \frac{ (2l - 1) x P^m_{l - 1} - (l + m - 1) P^m_{l - 2} }{l - m} \\$$
 
+计算 y|m|l 需要先计算 P|m|l(z). 使用方程 134 中的递归关系很容易做到. 第三个递归可用于在表 20中进行"对角移动", 即计算 y00, y11, y22 等. 然后, 第四个递归可用于垂直移动.
 
-
-连带勒让德多项式 P|m|lPl|m| 可以通过下式递归计算:
-
-
-
-P00(x)=1P01(x)=xPll(x)=(−1)l(2l−1)!!(1−x2)l2Pml(x)=(2l−1)xPml−1−(l+m−1)Pml−2l−m(134)(134)P00(x)=1P10(x)=xPll(x)=(−1)l(2l−1)!!(1−x2)l2Plm(x)=(2l−1)xPl−1m−(l+m−1)Pl−2ml−m
-
-
-
-计算 y|m|lyl|m| 需要先计算 P|m|l(z)Pl|m|(z). 使用方程 [134](https://jerkwin.github.io/filamentcn/Filament.md.html#mjx-eqn-shRecursions)134 中的递归关系很容易做到. 第三个递归可用于在[表 20](https://jerkwin.github.io/filamentcn/Filament.md.html#表_basisfunctions)中进行"对角移动", 即计算 y00y00, y11y11, y22y22 等. 然后, 第四个递归可用于垂直移动.
-
-| 波段指数 |        基函数 −l<=m<=l−l<=m<=l         |
-| :------: | :------------------------------------: |
-|  l=0l=0  |                 y00y00                 |
-|  l=1l=1  |         y−11y1−1 y01y10 y11y11         |
-|  l=2l=2  | y−22y2−2 y−12y2−1 y02y20 y12y21 y22y22 |
+| 波段指数 |    基函数 −l<=m<=l    |
+| :------: | :-------------------: |
+|   l=0    |          y00          |
+|   l=1    |     y−11 y01 y11      |
+|   l=2    | y−22 y−12 y02 y12 y22 |
 
 **表 19:** 每个波段的基函数
 
-
-
 递归地计算三角项也很容易:
 
-
-
-CmSm{x,y,z}≡cos(mϕ)≡sin(mϕ)={cosϕsinθ,sinϕsinθ,cosθ}Cm≡cos⁡(mϕ)Sm≡sin⁡(mϕ){x,y,z}={cos⁡ϕsin⁡θ,sin⁡ϕsin⁡θ,cos⁡θ}
-
-
+$$C_m &\equiv \cos(m \phi) \\S_m &\equiv \sin(m \phi) \\\{ x, y, z \} &= \{ \cos \phi \sin \theta, \sin \phi \sin \theta, \cos \theta \}$$
 
 使用和差化积公式:
 
+$$\cos(m \phi + \phi) &= \cos(m \phi) \cos(\phi) - \sin(m \phi) \sin(\phi) \Leftrightarrow C_{m + 1} = \frac{(x C_m - y S_m)}{\sin(\theta)^{|m + 1|}} \\\sin(m \phi + \phi) &= \sin(m \phi) \sin(\phi) + \cos(m \phi) \sin(\phi) \Leftrightarrow S_{m + 1} = \frac{(x S_m - y C_m)}{\sin(\theta)^{|m + 1|}}$$
 
+上面的方程有一个额外的项 sin(θ)−|m+1|, 但我们可以通过乘以 Pll(z)以及 sin(θ)|m+1|来补偿 P|m|l(z)递归中的项, 这大大简化了134 中的第三个方程, 因为 Pll(cosθ)sin(θ)−l=(−1)l(2l−1)!!
 
-cos(mϕ+ϕ)sin(mϕ+ϕ)=cos(mϕ)cos(ϕ)−sin(mϕ)sin(ϕ)⇔Cm+1=(xCm−ySm)sin(θ)|m+1|=sin(mϕ)sin(ϕ)+cos(mϕ)sin(ϕ)⇔Sm+1=(xSm−yCm)sin(θ)|m+1|cos⁡(mϕ+ϕ)=cos⁡(mϕ)cos⁡(ϕ)−sin⁡(mϕ)sin⁡(ϕ)⇔Cm+1=(xCm−ySm)sin⁡(θ)|m+1|sin⁡(mϕ+ϕ)=sin⁡(mϕ)sin⁡(ϕ)+cos⁡(mϕ)sin⁡(ϕ)⇔Sm+1=(xSm−yCm)sin⁡(θ)|m+1|
-
-
-
-上面的方程有一个额外的项 sin(θ)−|m+1|sin⁡(θ)−|m+1|, 但我们可以通过乘以 Pll(z)Pll(z) 以及 sin(θ)|m+1|sin⁡(θ)|m+1|来补偿 P|m|l(z)Pl|m|(z) 递归中的项, 这大大简化了 [134](https://jerkwin.github.io/filamentcn/Filament.md.html#mjx-eqn-shRecursions)134 中的第三个方程, 因为 Pll(cosθ)sin(θ)−l=(−1)l(2l−1)!!Pll(cos⁡θ)sin⁡(θ)−l=(−1)l(2l−1)!!.
-
-[清单 50](https://jerkwin.github.io/filamentcn/Filament.md.html#清单_nonnormalizedshbasis)展示了用于计算非归一化SH基 yml(s)2√Kmlylm(s)2Klm 的C++代码:
+清单 50展示了用于计算非归一化SH基 yml(s)2√Kml 的C++代码:
 
 ```
 static inline size_t SHindex(ssize_t m, size_t l) {
@@ -2484,11 +2454,11 @@ void computeShBasis(
 
 前三个波段归一化的SH基函数 $y^m_l(s)$:
 
-|  Band  |     m=−2m=−2      |      m=−1m=−1       |              m=0m=0               |       m=1m=1        |     m=2m=2      |
-| :----: | :---------------: | :-----------------: | :-------------------------------: | :-----------------: | :-------------: |
-| l=0l=0 |                   |                     |            121π−−√121π            |                     |                 |
-| l=1l=1 |                   |   −123π−−√y−123πy   |           123π−−√z123πz           |   −123π−−√x−123πx   |                 |
-| l=2l=2 | 1215π−−√xy1215πxy | −1215π−−√yz−1215πyz | 145π−−√(2z2−x2−y2)145π(2z2−x2−y2) | −1215π−−√xz−1215πxz | 1415π−−√(x2−y2) |
+| Band |       m=−2        |        m=−1         |                m=0                |         m=1         |       m=2       |
+| :--: | :---------------: | :-----------------: | :-------------------------------: | :-----------------: | :-------------: |
+| l=0  |                   |                     |            121π−−√121π            |                     |                 |
+| l=1  |                   |   −123π−−√y−123πy   |           123π−−√z123πz           |   −123π−−√x−123πx   |                 |
+| l=2  | 1215π−−√xy1215πxy | −1215π−−√yz−1215πyz | 145π−−√(2z2−x2−y2)145π(2z2−x2−y2) | −1215π−−√xz−1215πxz | 1415π−−√(x2−y2) |
 
 **表 20:** 每个波段归一化的基函数
 
@@ -2496,47 +2466,29 @@ void computeShBasis(
 
 定义在球面上的函数 L(S)L(S) 可以投影到SH基上, 如下所示:
 
+$$L^m_l = \int_\Omega L(s) y^m_l(s) ds \\L^m_l = \int_{\theta = 0}^{\pi} \int_{\phi = 0}^{2\pi} L(\theta, \phi) y^m_l(\theta, \phi) \sin \theta d\theta d\phi$$
 
-
-Lml=∫ΩL(s)yml(s)dsLml=∫πθ=0∫2πϕ=0L(θ,ϕ)yml(θ,ϕ)sinθdθdϕ(135)(135)Llm=∫ΩL(s)ylm(s)dsLlm=∫θ=0π∫ϕ=02πL(θ,ϕ)ylm(θ,ϕ)sin⁡θdθdϕ
-
-
-
-注意, 每个 LmlLlm 为3个值的向量, 每个RGB颜色通道一个.
+注意, 每个 Lml 为3个值的向量, 每个RGB颜色通道一个.
 
 SH系数的逆变换, 或重建, 或渲染由下式给出:
 
-
-
-L^(s)=∑l∑m=−llLmlyml(s)(136)
+$$\hat{L}(s) = \sum_l \sum_{m = -l}^l L^m_l y^m_l(s)$$
 
 #### 9.6.3 ⟨cosθ⟩的分解
 
-由于 ⟨cosθ⟩⟨cos⁡θ⟩ 与 ϕϕ 无关(不依赖方位角), 因此积分可简化为:
+由于 ⟨cosθ⟩ 与 ϕ 无关(不依赖方位角), 因此积分可简化为:
 
-
-
-C0lC0lCml=2π∫π0⟨cosθ⟩y0l(θ)sinθdθ=2πKml∫π20P0l(cosθ)cosθsinθdθ=0,m!=0Cl0=2π∫0π⟨cos⁡θ⟩yl0(θ)sin⁡θdθCl0=2πKlm∫0π2Pl0(cos⁡θ)cos⁡θsin⁡θdθClm=0,m!=0
-
-
+$$C^0_l &= 2\pi \int_0^{\pi} \left< \cos \theta \right> y^0_l(\theta) \sin \theta d\theta \\C^0_l &= 2\pi K^m_l \int_0^{\frac{\pi}{2}} P^0_l(\cos \theta) \cos \theta \sin \theta d\theta \\C^m_l &= 0, m != 0$$
 
 在[[Ramamoorthi01](https://jerkwin.github.io/filamentcn/Filament.md.html#citation-ramamoorthi01)]中给出了积分的解析解:
 
-
-
-C1CoddCl,even=π3−−√=0=2π2l+14π−−−−−−√(−1)l2−1(l+2)(l−1)l!2l(l!2)2C1=π3Codd=0Cl,even=2π2l+14π(−1)l2−1(l+2)(l−1)l!2l(l!2)2
-
-
+$$C_1 &= \sqrt{\frac{\pi}{3}} \\C_{odd} &= 0 \\C_{l, even} &= 2\pi \sqrt{\frac{2l + 1}{4\pi}} \frac{(-1)^{\frac{l}{2} - 1}}{(l + 2)(l - 1)} \frac{l!}{2^l (\frac{l!}{2})^2}$$
 
 前几个系数为:
 
+$$C_0 &= +0.88623 \\C_1 &= +1.02333 \\C_2 &= +0.49542 \\C_3 &= +0.00000 \\C_4 &= -0.11078$$
 
-
-C0C1C2C3C4=+0.88623=+1.02333=+0.49542=+0.00000=−0.11078C0=+0.88623C1=+1.02333C2=+0.49542C3=+0.00000C4=−0.11078
-
-
-
-合理地近似 ⟨cosθ⟩⟨cos⁡θ⟩ 只需要很少几个系数, 如[图 95](https://jerkwin.github.io/filamentcn/Filament.md.html#图_shcosthetaapprox)所示.
+合理地近似 ⟨cosθ⟩只需要很少几个系数, 如图 95所示.
 
 
 
@@ -2548,17 +2500,11 @@ C0C1C2C3C4=+0.88623=+1.02333=+0.49542=+0.00000=−0.11078C0=+0.88623C1=+1.02333C
 
 具有圆对称性的核 hh 的卷积可以直接在SH空间中轻松应用:
 
+$$(h * f)^m_l = \sqrt{\frac{4\pi}{2l + 1}} h^0_l(s) f^m_l(s)$$
 
+方便地, $\sqrt{\frac{4\pi}{2l+1}}=\frac{1}{K^0_l}$, 所以在实践中我们将 Cl 预先乘以$\frac{1}{K^0_l}$, 得到一个更简单的表达式:
 
-(h∗f)ml=4π2l+1−−−−−−√h0l(s)fml(s)(137)(137)(h∗f)lm=4π2l+1hl0(s)flm(s)
-
-
-
-方便地, 4π2l+1−−−−√=1K0l4π2l+1=1Kl0, 所以在实践中我们将 ClCl 预先乘以1K0l1Kl0, 得到一个更简单的表达式:
-
-
-
-C^l,even=2π(−1)l2−1(l+2)(l−1)l!2l(l!2)2C^1=2π3
+$$\hat{C}_{l, even} = 2\pi \frac{(-1)^{\frac{l}{2} - 1}}{(l + 2)(l - 1)} \frac{l!}{2^l (\frac{l!}{2})^2} \\\hat{C}_1 = \frac{2\pi}{3}$$
 
 以下是计算 $C^l$ 的C++代码:
 
@@ -2932,3 +2878,6 @@ void main() {
 [**Schlick94**] Christophe Schlick. 1994. An Inexpensive BRDF Model for Physically-Based Rendering. *Computer Graphics Forum*, 13 (3), 233–246.
 
 [**Walter07**] Bruce Walter et al. 2007. Microfacet Models for Refraction through Rough Surfaces. *Proceedings of the Eurographics Symposium on Rendering*.
+
+
+

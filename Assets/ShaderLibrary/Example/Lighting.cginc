@@ -3,7 +3,7 @@
 
 #include "Lighting_Input.cginc"
 #include "../Gesetz_PBR/Indirect_Light.hlsl"
-#include "../Gesetz_PBR/Lighting_Lit.hlsl"
+#include "../Gesetz_PBR/Shading_Lit.hlsl"
 #include "../Gesetz_PBR/Shading_Models.hlsl"
 
 #if !defined(ALBEDO_FUNCTION)
@@ -213,7 +213,7 @@ UnityIndirect CreateIndirectLight (
 				indirectLight.diffuse += max(0, ShadeSH9(float4(i.normal, 1)));
 			#endif
 		#endif
-		//Indirect Specular-LG Term   UnityGI_IndirectSpecular
+		//Indirect Specular-LD Term   UnityGI_IndirectSpecular
 		float3 reflectionDir = reflect(-viewDir, i.normal);
 		Unity_GlossyEnvironmentData envData;
 		envData.roughness = 1 - surface.smoothness;
@@ -472,6 +472,8 @@ FragmentOutput FragmentProgram (Interpolators i) {
 		i.normal, viewDir,
 		CreateLight(i), CreateIndirectLight(i, viewDir, surface)
 	);
+
+
 	
 	color.rgb += surface.emission;
 	#if defined(_RENDERING_FADE) || defined(_RENDERING_TRANSPARENT)
@@ -511,12 +513,11 @@ FragmentOutput Gesetz_FragmentProgram (Interpolators i) {
 	#endif
 	ApplyParallax(i);
 
-	ShadingParameters shadingParameters=GetShadingParameters(i);
-
+	ShadingParameters shadingParameters=computeShadingParams(i);
+	
 	MaterialInputs material;
 	InitMaterialInputs(material);
-
-	prepareMaterial(material,i);
+	getMaterial(material,i);
 
 	float alpha = material.baseColor.a;
 	#if defined(_RENDERING_CUTOUT)
@@ -526,25 +527,16 @@ FragmentOutput Gesetz_FragmentProgram (Interpolators i) {
 	PixelParams pixel;
 	getPixelParams(material,pixel,shadingParameters);
 
-	// float oneMinusReflectivity=OneMinusReflectivityFromMetallic(material.metallic);
-	//
-	// #if defined(_RENDERING_TRANSPARENT)
-	// 	pixel.diffColor *= alpha;
-	// 	alpha = 1 - oneMinusReflectivity + alpha * oneMinusReflectivity;
-	// #endif
-
 	UnityLight light=CreateLight(i);
-	// UnityIndirect GI=createIndirectLight(i,shadingParameters,material);
-	
-	float4 color=GESETZ_BRDF_PBS(pixel,shadingParameters,light);
 
+	float4 color=GESETZ_BRDF_PBS(pixel,shadingParameters,light);
 	evaluateIBL(material,pixel,shadingParameters,color);
 	
 	color.rgb += material.emissive;
 	#if defined(_RENDERING_FADE) || defined(_RENDERING_TRANSPARENT)
 		color.a = alpha;
 	#endif
-	
+
 	FragmentOutput output;
 	#if defined(DEFERRED_PASS)
 		#if !defined(UNITY_HDR_ON)
@@ -577,12 +569,11 @@ FragmentOutput Gesetz_Cloth_FragmentProgram (Interpolators i) {
 		UnityApplyDitherCrossFade(i.vpos);
 	#endif
 
-	ShadingParameters shadingParameters=GetShadingParameters(i);
+	ShadingParameters shadingParameters=computeShadingParams(i);
 
 	MaterialInputs material;
 	InitMaterialInputs(material);
-
-	prepareMaterial(material,i);
+	getMaterial(material,i);
 
 	float alpha = material.baseColor.a;
 	#if defined(_RENDERING_CUTOUT)
@@ -636,12 +627,11 @@ FragmentOutput Gesetz_SubSurface_FragmentProgram (Interpolators i) {
 		UnityApplyDitherCrossFade(i.vpos);
 	#endif
 
-	ShadingParameters shadingParameters=GetShadingParameters(i);
+	ShadingParameters shadingParameters=computeShadingParams(i);
 
 	MaterialInputs material;
 	InitMaterialInputs(material);
-
-	prepareMaterial(material,i);
+	getMaterial(material,i);
 
 	float alpha = material.baseColor.a;
 	#if defined(_RENDERING_CUTOUT)
@@ -654,7 +644,7 @@ FragmentOutput Gesetz_SubSurface_FragmentProgram (Interpolators i) {
 
 	UnityLight light=CreateLight(i);
 
-	float4 color=GESETZ_SUBSURFACE_PBS(pixel,shadingParameters,light);
+	float4 color=GESETZ_SUBSURFACE_PBS(pixel,shadingParameters,light,material.ambientOcclusion);
 
 	evaluateIBL(material,pixel,shadingParameters,color);
 	

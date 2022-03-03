@@ -104,7 +104,7 @@ float4 GESETZ_BRDF_PBS(PixelParams pixel,ShadingParameters shadingParameters,
 	//SafeNormalize
 	float3 H=normalize(viewDir+L);
 	
-	float NdotV=max(dot(normal,viewDir),MIN_N_DOT_V);
+	float NdotV=shadingParameters.NdotV;
 	float NdotL=saturate(dot(normal,L));
 	float NdotH=saturate(dot(normal,H));
 	float LdotH=saturate(dot(L,H));
@@ -219,7 +219,7 @@ float4 GESETZ_CLOTH_PBS(PixelParams pixel,ShadingParameters shadingParameters,
 
 //Subsurface
 
-float4 GESETZ_SUBSURFACE_PBS(PixelParams pixel,ShadingParameters shadingParameters,UnityLight light)
+float4 GESETZ_SUBSURFACE_PBS(PixelParams pixel,ShadingParameters shadingParameters,UnityLight light,float occlusion)
 {
 	float3 L=light.dir;
 	float3 viewDir=shadingParameters.viewDir;
@@ -248,17 +248,19 @@ float4 GESETZ_SUBSURFACE_PBS(PixelParams pixel,ShadingParameters shadingParamete
 	float3 Fd=pixel.diffColor*Diffuse(pixel.roughness,NdotV,NdotL,LdotH);
 	
 	// NoL does not apply to transmitted light
-	float3 color=(Fd+Fr)*(NdotL/**occlusion*/);
+	float3 color=(Fd+Fr)*(NdotL*occlusion);
 	// subsurface scattering
     // Use a spherical gaussian approximation of pow() for forwardScattering
     // We could include distortion by adding shading_normal * distortion to light.l
-	
-	// float scatterVdotH=saturate(dot(viewDir,-L));
-	// float fowardScatter=exp2(scatterVdotH*pixel.subsurfacePower-pixel.subsurfacePower);
-	// float backScatter=saturate(NdotL*pixel.thickness+(1.0-pixel.thickness))*0.5;
-	// float subsurface=lerp(backScatter,1.0,fowardScatter)*(1.0-pixel.thickness);
-	// color+=pixel.subsurfaceColor*(subsurface*Fd_Lambert());
 
+#if defined(SHADING_MODEL_SUBSURFACE)
+	float scatterVdotH=saturate(dot(viewDir,-L));
+	float fowardScatter=exp2(scatterVdotH*pixel.subsurfacePower-pixel.subsurfacePower);
+	float backScatter=saturate(NdotL*pixel.thickness+(1.0-pixel.thickness))*0.5;
+	float subsurface=lerp(backScatter,1.0,fowardScatter)*(1.0-pixel.thickness);
+	color+=pixel.subsurfaceColor*(subsurface*Fd_Lambert());
+#endif
+	
 	// TODO: apply occlusion to the transmitted light
 	return float4(color*light.color,1.0);
 }

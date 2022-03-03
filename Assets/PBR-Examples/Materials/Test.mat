@@ -10,7 +10,7 @@ Material:
   m_Name: Test
   m_Shader: {fileID: 4800000, guid: 41237f08fc7d3f14cb1748fde56d4f6e, type: 3}
   m_ShaderKeywords: ROUGHNESS_MAP _METALLIC_MAP _NORMAL_MAP _OCCLUSION_MAP _SMOOTHNESS_ALBEDO
-  m_LightmapFlags: 2
+  m_LightmapFlags: 0
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
   m_CustomRenderQueue: 2000
@@ -24,6 +24,10 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _AnisotropyDirection:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _BentNormalMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}

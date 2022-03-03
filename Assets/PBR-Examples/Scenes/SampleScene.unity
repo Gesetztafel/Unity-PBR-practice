@@ -477,7 +477,7 @@ MonoBehaviour:
   clearcoatroughness: 0.1
   sheenroughness: 0.5
   anisotropy: 0
-  sheenColor: {r: 0.9010434, g: 0.9339623, b: 0.17093267, a: 1}
+  sheenColor: {r: 1, g: 1, b: 1, a: 1}
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
 --- !u!135 &90214206
 SphereCollider:
@@ -1490,7 +1490,7 @@ MonoBehaviour:
   clearcoatroughness: 0.1
   sheenroughness: 0.9
   anisotropy: 0
-  sheenColor: {r: 0.9010434, g: 0.9339623, b: 0.17093267, a: 1}
+  sheenColor: {r: 1, g: 1, b: 1, a: 1}
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
 --- !u!135 &207433106
 SphereCollider:
@@ -4001,7 +4001,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 705507993}
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: -8.94, y: 15.48, z: 7.05}
+  m_LocalPosition: {x: -8.94, y: 15.48, z: 31.95}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -4181,7 +4181,7 @@ MonoBehaviour:
   clearcoatroughness: 0.1
   sheenroughness: 0.7
   anisotropy: 0
-  sheenColor: {r: 0.9010434, g: 0.9339623, b: 0.17093267, a: 1}
+  sheenColor: {r: 1, g: 1, b: 1, a: 1}
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
 --- !u!135 &725901686
 SphereCollider:
@@ -4389,7 +4389,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d6134c515a82708439e883b8f327a25e, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 9
+      value: 9.565
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d6134c515a82708439e883b8f327a25e, type: 3}
       propertyPath: m_LocalPosition.y
@@ -6002,7 +6002,7 @@ MonoBehaviour:
   clearcoatroughness: 0.1
   sheenroughness: 0.1
   anisotropy: 0
-  sheenColor: {r: 0.9010434, g: 0.9339623, b: 0.17093267, a: 1}
+  sheenColor: {r: 1, g: 1, b: 1, a: 1}
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
 --- !u!135 &891017617
 SphereCollider:
@@ -6121,7 +6121,7 @@ MonoBehaviour:
   clearcoatroughness: 0.1
   sheenroughness: 0
   anisotropy: 0
-  sheenColor: {r: 0.9010434, g: 0.9339623, b: 0.17093267, a: 1}
+  sheenColor: {r: 1, g: 1, b: 1, a: 1}
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
 --- !u!135 &941383456
 SphereCollider:
@@ -7179,7 +7179,7 @@ MonoBehaviour:
   clearcoatroughness: 0.1
   sheenroughness: 0.6
   anisotropy: 0
-  sheenColor: {r: 0.9010434, g: 0.9339623, b: 0.17093267, a: 1}
+  sheenColor: {r: 1, g: 1, b: 1, a: 1}
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
 --- !u!135 &1134167900
 SphereCollider:
@@ -7774,7 +7774,7 @@ MonoBehaviour:
   clearcoatroughness: 0.1
   sheenroughness: 0.4
   anisotropy: 0
-  sheenColor: {r: 0.9010434, g: 0.9339623, b: 0.17093267, a: 1}
+  sheenColor: {r: 1, g: 1, b: 1, a: 1}
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
 --- !u!135 &1259926671
 SphereCollider:
@@ -8373,7 +8373,7 @@ MonoBehaviour:
   clearcoatroughness: 0.1
   sheenroughness: 0.1
   anisotropy: 0
-  sheenColor: {r: 1, g: 1, b: 1, a: 1}
+  sheenColor: {r: 1, g: 0.97547174, b: 0.97547174, a: 1}
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
 --- !u!1 &1394002325
 GameObject:
@@ -8549,7 +8549,7 @@ MonoBehaviour:
   clearcoatroughness: 0.1
   sheenroughness: 1
   anisotropy: 0
-  sheenColor: {r: 0.9010434, g: 0.9339623, b: 0.17093267, a: 1}
+  sheenColor: {r: 1, g: 1, b: 1, a: 1}
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
 --- !u!135 &1411707018
 SphereCollider:
@@ -8787,7 +8787,7 @@ MonoBehaviour:
   clearcoatroughness: 0.1
   sheenroughness: 0.8
   anisotropy: 0
-  sheenColor: {r: 0.9010434, g: 0.9339623, b: 0.17093267, a: 1}
+  sheenColor: {r: 1, g: 1, b: 1, a: 1}
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
 --- !u!135 &1417890229
 SphereCollider:
@@ -10773,7 +10773,7 @@ MonoBehaviour:
   clearcoatroughness: 0.1
   sheenroughness: 0.2
   anisotropy: 0
-  sheenColor: {r: 0.9010434, g: 0.9339623, b: 0.17093267, a: 1}
+  sheenColor: {r: 1, g: 1, b: 1, a: 1}
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
 --- !u!135 &1984733336
 SphereCollider:
@@ -11667,7 +11667,7 @@ MonoBehaviour:
   clearcoatroughness: 0.1
   sheenroughness: 0.3
   anisotropy: 0
-  sheenColor: {r: 0.9010434, g: 0.9339623, b: 0.17093267, a: 1}
+  sheenColor: {r: 1, g: 1, b: 1, a: 1}
   emissionColor: {r: 0, g: 0, b: 0, a: 1}
 --- !u!135 &2127809538
 SphereCollider:

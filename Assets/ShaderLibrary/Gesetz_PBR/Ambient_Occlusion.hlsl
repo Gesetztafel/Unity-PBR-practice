@@ -3,7 +3,6 @@
 
 #include "Lighting_Common.hlsl"
 //Move to Shading_Config.hlsl
-
 // Diffuse BRDFs
 #define SPECULAR_AO_OFF             0
 #define SPECULAR_AO_SIMPLE          1

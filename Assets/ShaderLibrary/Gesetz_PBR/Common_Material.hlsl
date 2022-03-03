@@ -1,6 +1,15 @@
 #ifndef GESETZ_COMMON_MATERIAL_INCLUDED
 #define GESETZ_COMMON_MATERIAL_INCLUDED
 
+
+#include "Shading_Config.hlsl"
+
+//[Neubelt & Pettineo 13]"Crafting a Next-gen Material Pipeline for The Order: 1886"
+float clampNdotV(float NdotV)
+{
+	return max(NdotV,MIN_N_DOT_V);
+}
+
 float3 computeDiffuseColor(const float4 baseColor, float metallic) {
     return baseColor.rgb * (1.0 - metallic);
 }
